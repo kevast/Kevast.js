@@ -10,7 +10,7 @@ class Kevast {
   constructor(master: Storage, ...redundancies: Storage[]) {
     this.master = master;
     this.redundancies = redundancies;
-    this.mode = 'sync';
+    this.mode = master instanceof SyncStorage ? 'sync' : 'async';
   }
   public redundancy(storage: Storage): void {
     this.redundancies.push(storage);
