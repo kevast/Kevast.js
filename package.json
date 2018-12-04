@@ -1,0 +1,26 @@
+{
+  "name": "kevast.js",
+  "version": "0.0.1",
+  "description": "Kevast for browser and Node.js. One key-value interface, all kinds of storages.",
+  "main": "dist/node/index.js",
+  "scripts": {
+    "clean": "rm -rf ./dist/*",
+    "build": "npm run clean && tsc && webpack",
+    "lint": "tslint -p tsconfig.json"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "repository": "git@github.com:kevast/kevast.js.git",
+  "author": "Andie <zchangan@163.com>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/node": "^10.12.12",
+    "ts-loader": "^5.3.1",
+    "tslint": "^5.11.0",
+    "typescript": "^3.2.1",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2"
+  }
+}
