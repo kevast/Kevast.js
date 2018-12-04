@@ -18,6 +18,9 @@ class Kevast {
       this.mode = 'async';
     }
   }
+  public getMode(): string {
+    return this.mode;
+  }
   public clear(): Promise<void> | void {
     if (this.mode === 'sync') {
       this.master.clear();
