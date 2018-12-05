@@ -1,7 +1,12 @@
+import {Pair} from '../../src/Pair';
 import {SyncStorage} from '../../src/SyncStorage';
 
 export class SStorage extends SyncStorage {
-  private storage: Map<string, string> = new Map();
+  private storage: Map<string, string>;
+  public constructor(storage: Map<string, string> = new Map()) {
+    super();
+    this.storage = storage;
+  }
   public clear(): void {
     this.storage.clear();
   }
@@ -11,7 +16,7 @@ export class SStorage extends SyncStorage {
   public delete(key: string): void {
     this.storage.delete(key);
   }
-  public entries(): IterableIterator<[string, string]> {
+  public entries(): IterableIterator<Pair> {
     return this.storage.entries();
   }
   public get(key: string): string | null | undefined {

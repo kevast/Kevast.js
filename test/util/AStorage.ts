@@ -1,7 +1,12 @@
 import {AsyncStorage} from '../../src/AsyncStorage';
+import {Pair} from '../../src/Pair';
 
 export class AStorage extends AsyncStorage {
-  private storage: Map<string, string> = new Map();
+  private storage: Map<string, string>;
+  public constructor(storage: Map<string, string> = new Map()) {
+    super();
+    this.storage = storage;
+  }
   public clear(): Promise<void> {
     this.storage.clear();
     return Promise.resolve();
@@ -13,7 +18,7 @@ export class AStorage extends AsyncStorage {
     this.storage.delete(key);
     return Promise.resolve();
   }
-  public entries(): Promise<IterableIterator<[string, string]>> {
+  public entries(): Promise<IterableIterator<Pair>> {
     return Promise.resolve(this.storage.entries());
   }
   public get(key: string): Promise<string | null | undefined> {
