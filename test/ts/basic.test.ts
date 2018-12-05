@@ -32,17 +32,17 @@ describe('Test basic sync function', () => {
     assert(kevast.has('key4') === false);
   });
   it('Entries', () => {
-    const source = [...(kevast.entries() as IterableIterator<[string, string]>)];
+    const source = [...kevast.entries()];
     const target = [['key1', 'value1'], ['key2', 'value2'], ['key3', 'value3']];
     assert.deepStrictEqual(source, target);
   });
   it('Keys', () => {
-    const source = [...(kevast.keys() as IterableIterator<string>)];
+    const source = [...kevast.keys()];
     const target = ['key1', 'key2', 'key3'];
     assert.deepStrictEqual(source, target);
   });
   it('Values', () => {
-    const source = [...(kevast.values() as IterableIterator<string>)];
+    const source = [...kevast.values()];
     const target = ['value1', 'value2', 'value3'];
     assert.deepStrictEqual(source, target);
   });
@@ -81,17 +81,17 @@ describe('Test basic async function', () => {
     assert(await kevast.has('key4') === false);
   });
   it('Entries', async () => {
-    const source = [...(await kevast.entries() as IterableIterator<[string, string]>)];
+    const source = [...await kevast.entries()];
     const target = [['key1', 'value1'], ['key2', 'value2'], ['key3', 'value3']];
     assert.deepStrictEqual(source, target);
   });
   it('Keys', async () => {
-    const source = [...(await kevast.keys() as IterableIterator<string>)];
+    const source = [...await kevast.keys()];
     const target = ['key1', 'key2', 'key3'];
     assert.deepStrictEqual(source, target);
   });
   it('Values', async () => {
-    const source = [...(await kevast.values() as IterableIterator<string>)];
+    const source = [...await kevast.values()];
     const target = ['value1', 'value2', 'value3'];
     assert.deepStrictEqual(source, target);
   });
