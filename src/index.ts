@@ -1,9 +1,11 @@
-import AsyncStorage from './AsyncStorage';
-import Kevast from './Kevast';
-import SyncStorage from './SyncStorage';
+import {AsyncStorage} from './AsyncStorage';
+import {KevastAsync} from './KevastAsync';
+import {KevastSync} from './KevastSync';
+import {SyncStorage} from './SyncStorage';
 
-export default {
+export {
   AsyncStorage,
-  Kevast,
+  KevastAsync,
+  KevastSync,
   SyncStorage
 };
