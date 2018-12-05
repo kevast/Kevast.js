@@ -1,43 +1,38 @@
 import {AsyncStorage} from './AsyncStorage';
-import {IMiddleware} from './IMiddleware';
+import {IDuplexMiddleware, SimplexMiddleware} from './Middleware';
+import {Pair} from './Pair';
 import {SyncStorage} from './SyncStorage';
-type Pair = [string, string];
-type Interceptor = (pair: Pair) => void;
 
 export class KevastAsync {
   public onGet = {
-    use: (interceptor: Interceptor) => {
+    use: (middleware: SimplexMiddleware) => {
       this.use({
-        onGet: interceptor,
+        onGet: middleware,
         onSet: (_: Pair) => { return; }
       });
     }
   };
   public onSet = {
-    use: (interceptor: Interceptor) => {
+    use: (middleware: SimplexMiddleware) => {
       this.use({
         onGet: (_: Pair) => { return; },
-        onSet: interceptor
+        onSet: middleware
       });
     }
   };
   private master: AsyncStorage;
   private redundancies: AsyncStorage[];
-  private onGetInterceptors: Interceptor[];
-  private onSetInterceptors: Interceptor[];
+  private middlewares: IDuplexMiddleware[];
   constructor(master: AsyncStorage, ...redundancies: AsyncStorage[]) {
     this.master = master;
     this.redundancies = redundancies;
     if ([master, ...redundancies].every((storage) => storage instanceof SyncStorage)) {
       throw TypeError('All storages are SyncStorage, please use KevastSync');
     }
-    this.onGetInterceptors = [];
-    this.onSetInterceptors = [];
+    this.middlewares = [];
   }
-  public use(middleware: IMiddleware) {
-    this.onGetInterceptors.unshift(middleware.onGet);
-    this.onSetInterceptors.push(middleware.onSet);
-    return;
+  public use(middleware: IDuplexMiddleware) {
+    this.middlewares.push(middleware);
   }
   public clear(): Promise<void> {
     return Promise.all([this.master, ...this.redundancies].map((storage) => storage.clear())).then(() => {});
@@ -52,13 +47,16 @@ export class KevastAsync {
     return this.master.entries();
   }
   public get(key: string, defaultValue: string | null = null): Promise<string | null> {
-    return this.master.get(key).then((value) => {
-      if (value === null || value === undefined) {
+    const pair: Pair = [key, null];
+    const handler = this.composeMiddleware(this.middlewares, 'onGet', async (innerPair: Pair) => {
+      pair[1] = await this.master.get(key);
+    });
+    return handler(pair).then(() => {
+      const result = pair[1];
+      if (result === null || result === undefined) {
         return defaultValue;
       } else {
-        const pair: Pair = [key, value as string];
-        this.onGetInterceptors.forEach((interceptor) => interceptor(pair));
-        return pair[1];
+        return result;
       }
     });
   }
@@ -67,13 +65,38 @@ export class KevastAsync {
   }
   public set(key: string, value: string): Promise<void> {
     const pair: Pair = [key, value];
-    this.onGetInterceptors.forEach((interceptor) => interceptor(pair));
-    return Promise.all([this.master, ...this.redundancies].map((storage) => storage.set(...pair))).then(() => {});
+    const handler = this.composeMiddleware(this.middlewares, 'onSet', async (innerPair: Pair) => {
+      return Promise.all(
+              [this.master, ...this.redundancies].map((storage) => storage.set(pair[0], pair[1] as string))
+            ).then(() => {});
+    });
+    return handler(pair);
   }
   public size(): Promise<number> {
     return this.master.size();
   }
   public values(): Promise<IterableIterator<string>> {
     return this.master.values();
+  }
+  private composeMiddleware(middlewares: IDuplexMiddleware[],
+                            direction: 'onGet' | 'onSet',
+                            final: (pair: Pair) => Promise<void>): (pair: Pair) => Promise<void> {
+    if (direction === 'onGet') {
+      middlewares = [...middlewares].reverse();
+    }
+    return (pair: Pair): Promise<void> => {
+      const index = -1;
+      return dispatch(0);
+      function dispatch(i: number): Promise<void> {
+        if (i <= index) {
+          return Promise.reject(new Error('next() called multiple times'));
+        }
+        if (i === middlewares.length) {
+          return final(pair);
+        }
+        const fn = middlewares[i][direction];
+        return Promise.resolve(fn(pair, dispatch.bind(null, i + 1)));
+      }
+    };
   }
 }

@@ -1,43 +1,38 @@
 import {AsyncStorage} from './AsyncStorage';
-import { IMiddleware } from './IMiddleware';
+import {IDuplexMiddleware, SimplexMiddleware} from './Middleware';
+import {Pair} from './Pair';
 import {SyncStorage} from './SyncStorage';
-type Pair = [string, string];
-type Interceptor = (pair: Pair) => void;
 
 export class KevastSync {
   public onGet = {
-    use: (interceptor: Interceptor) => {
+    use: (middleware: SimplexMiddleware) => {
       this.use({
-        onGet: interceptor,
+        onGet: middleware,
         onSet: (_: Pair) => { return; }
       });
     }
   };
   public onSet = {
-    use: (interceptor: Interceptor) => {
+    use: (middleware: SimplexMiddleware) => {
       this.use({
         onGet: (_: Pair) => { return; },
-        onSet: interceptor
+        onSet: middleware
       });
     }
   };
   private master: SyncStorage;
   private redundancies: SyncStorage[];
-  private onGetInterceptors: Interceptor[];
-  private onSetInterceptors: Interceptor[];
+  private middlewares: IDuplexMiddleware[];
   constructor(master: SyncStorage, ...redundancies: SyncStorage[]) {
     this.master = master;
     this.redundancies = redundancies;
     if ([master, ...redundancies].some((storage) => storage instanceof AsyncStorage)) {
       throw TypeError('KevastSync only accept SyncStorage');
     }
-    this.onGetInterceptors = [];
-    this.onSetInterceptors = [];
+    this.middlewares = [];
   }
-  public use(middleware: IMiddleware) {
-    this.onGetInterceptors.unshift(middleware.onGet);
-    this.onSetInterceptors.push(middleware.onSet);
-    return;
+  public use(middleware: IDuplexMiddleware) {
+    this.middlewares.push(middleware);
   }
   public clear(): void {
     this.master.clear();
@@ -54,13 +49,16 @@ export class KevastSync {
     return this.master.entries();
   }
   public get(key: string, defaultValue: string | null = null): string | null {
-    const result = this.master.get(key);
+    const pair: Pair = [key, null];
+    const handler = this.composeMiddleware(this.middlewares, 'onGet', (innerPair: Pair) => {
+      pair[1] = this.master.get(key);
+    });
+    handler(pair);
+    const result = pair[1];
     if (result === null || result === undefined) {
       return defaultValue;
     } else {
-      const pair: Pair = [key, result as string];
-      this.onGetInterceptors.forEach((interceptor) => interceptor(pair));
-      return pair[1];
+      return result;
     }
   }
   public keys(): IterableIterator<string> {
@@ -68,14 +66,37 @@ export class KevastSync {
   }
   public set(key: string, value: string): void {
     const pair: Pair = [key, value];
-    this.onGetInterceptors.forEach((interceptor) => interceptor(pair));
-    this.master.set(...pair);
-    this.redundancies.forEach((storage) => storage.set(...pair));
+    const handler = this.composeMiddleware(this.middlewares, 'onSet', (innerPair: Pair) => {
+      this.master.set(pair[0], pair[1] as string);
+      this.redundancies.forEach((storage) => storage.set(pair[0], pair[1] as string));
+    });
+    handler(pair);
   }
   public size(): number {
     return this.master.size();
   }
   public values(): IterableIterator<string> {
     return this.master.values();
+  }
+  private composeMiddleware(middlewares: IDuplexMiddleware[],
+                            direction: 'onGet' | 'onSet',
+                            final: (pair: Pair) => void): (pair: Pair) => void {
+    if (direction === 'onGet') {
+      middlewares = [...middlewares].reverse();
+    }
+    return (pair: Pair): void => {
+      const index = -1;
+      return dispatch(0);
+      function dispatch(i: number): void {
+        if (i <= index) {
+          throw new Error('next() called multiple times');
+        }
+        if (i === middlewares.length) {
+          return final(pair);
+        }
+        const fn = middlewares[i][direction];
+        return fn(pair, dispatch.bind(null, i + 1));
+      }
+    };
   }
 }
