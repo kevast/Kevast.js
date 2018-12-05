@@ -79,8 +79,30 @@ describe('TypeScript: test sync mode middleware', () => {
       'beforeGet:3', 'beforeGet:2', 'beforeGet:1', 'afterGet:1', 'afterGet:2', 'afterGet:3'
     ]);
   });
-  // TODO call next multiple times
-  // TODO call next 0 time
+  it('Never call next', () => {
+    const kevast = new KevastSync(new SStorage());
+    kevast.onGet.use(() => {});
+    kevast.onGet.use(() => {});
+    kevast.onSet.use(() => {});
+    kevast.onSet.use(() => {});
+    kevast.set('key', 'value');
+    const value = kevast.get('key');
+    assert(value === 'value');
+  });
+  it('Call next multiple times', () => {
+    let kevast = new KevastSync(new SStorage());
+    kevast.onGet.use((_: NullablePair, next: Function) => {
+      next();
+      next();
+    });
+    assert.throws(() => kevast.get('key'));
+    kevast = new KevastSync(new SStorage());
+    kevast.onSet.use((_: Pair, next: Function) => {
+      next();
+      next();
+    });
+    assert.throws(() => kevast.set('key', 'value'));
+  });
 });
 
 describe('TypeScript: test async mode middleware', () => {
@@ -156,6 +178,40 @@ describe('TypeScript: test async mode middleware', () => {
       'beforeSet:1', 'beforeSet:2', 'beforeSet:3', 'afterSet:3', 'afterSet:2', 'afterSet:1',
       'beforeGet:3', 'beforeGet:2', 'beforeGet:1', 'afterGet:1', 'afterGet:2', 'afterGet:3'
     ]);
+  });
+  it('Never call next', async () => {
+    const kevast = new KevastAsync(new AStorage());
+    kevast.onGet.use(() => {});
+    kevast.onGet.use(() => {});
+    kevast.onSet.use(() => {});
+    kevast.onSet.use(() => {});
+    await kevast.set('key', 'value');
+    const value = await kevast.get('key');
+    assert(value === 'value');
+  });
+  it('Call next multiple times', async () => {
+    let kevast = new KevastAsync(new AStorage());
+    kevast.onGet.use(async (pair: NullablePair, next: Function) => {
+      await next();
+      await next();
+    });
+    try {
+      await kevast.get('key');
+      assert.fail('Missing expected exception.');
+    } catch (err) {
+      assert(err.message === 'next() called multiple times');
+    }
+    kevast = new KevastAsync(new AStorage());
+    kevast.onSet.use(async (pair: Pair, next: Function) => {
+      await next();
+      await next();
+    });
+    try {
+      await kevast.set('key', 'value');
+      assert.fail('Missing expected exception.');
+    } catch (err) {
+      assert(err.message === 'next() called multiple times');
+    }
   });
 });
 
