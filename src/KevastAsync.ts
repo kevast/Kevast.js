@@ -89,7 +89,7 @@ export class KevastAsync {
       return dispatch(0);
       async function dispatch(index: number): Promise<void> {
         if (index <= last) {
-          throw new Error('next() called multiple times');
+          return Promise.reject(new Error('next() called multiple times'));
         }
         last = index;
         if (index === middlewares.length) {
