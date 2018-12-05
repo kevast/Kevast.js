@@ -8,14 +8,14 @@ export class KevastAsync {
     use: (middleware: GetMiddleware) => {
       this.use({
         onGet: middleware,
-        onSet: (_: Pair) => {}
+        onSet: () => {}
       });
     }
   };
   public onSet = {
     use: (middleware: SetMiddleware) => {
       this.use({
-        onGet: (_: NullablePair) => {},
+        onGet: () => {},
         onSet: middleware
       });
     }
@@ -49,7 +49,7 @@ export class KevastAsync {
   public get(key: string, defaultValue: string | null = null): Promise<string | null> {
     const pair: NullablePair = [key, null];
     const handler = this.composeMiddleware(this.middlewares, 'onGet', async (innerPair: NullablePair) => {
-      pair[1] = await this.master.get(key);
+      pair[1] = await this.master.get(pair[0]);
     });
     return handler(pair).then(() => {
       const result = pair[1];
@@ -86,22 +86,31 @@ export class KevastAsync {
       middlewares = [...middlewares].reverse();
     }
     return (pair: Pair | NullablePair): Promise<void> => {
-      const index = -1;
+      let last = -1;
       return dispatch(0);
-      function dispatch(i: number): Promise<void> {
-        if (i <= index) {
+      function dispatch(index: number): Promise<void> {
+        if (index <= last) {
           return Promise.reject(new Error('next() called multiple times'));
         }
-        if (i === middlewares.length) {
+        last = index;
+        if (index === middlewares.length) {
           return final(pair);
         }
+        const next: () => void  = dispatch.bind(null, index + 1);
+        let result: Promise<void>;
         if (direction === 'onGet') {
-          const fn = middlewares[i][direction] as GetMiddleware;
-          return Promise.resolve(fn(pair as NullablePair, dispatch.bind(null, i + 1)));
+          const fn = middlewares[index][direction] as GetMiddleware;
+          result = Promise.resolve(fn(pair as NullablePair, dispatch.bind(null, index + 1)));
         } else {
-          const fn = middlewares[i][direction] as SetMiddleware;
-          return Promise.resolve(fn(pair as Pair, dispatch.bind(null, i + 1)));
+          const fn = middlewares[index][direction] as SetMiddleware;
+          result = Promise.resolve(fn(pair as Pair, dispatch.bind(null, index + 1)));
         }
+        return result.then(() => {
+          // If next is not called, call it
+          if (index === last) {
+            return next();
+          }
+        });
       }
     };
   }

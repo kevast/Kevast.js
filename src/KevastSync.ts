@@ -8,14 +8,14 @@ export class KevastSync {
     use: (middleware: GetMiddleware) => {
       this.use({
         onGet: middleware,
-        onSet: (_: Pair) => {}
+        onSet: () => {}
       });
     }
   };
   public onSet = {
     use: (middleware: SetMiddleware) => {
       this.use({
-        onGet: (_: NullablePair) => {},
+        onGet: () => {},
         onSet: middleware
       });
     }
@@ -51,7 +51,7 @@ export class KevastSync {
   public get(key: string, defaultValue: string | null = null): string | null {
     const pair: NullablePair = [key, null];
     const handler = this.composeMiddleware(this.middlewares, 'onGet', (innerPair: Pair | NullablePair) => {
-      pair[1] = this.master.get(key);
+      pair[1] = this.master.get(pair[0]);
     });
     handler(pair);
     const result = pair[1];
@@ -85,21 +85,27 @@ export class KevastSync {
       middlewares = [...middlewares].reverse();
     }
     return (pair: Pair | NullablePair): void => {
-      const index = -1;
+      let last = -1;
       return dispatch(0);
-      function dispatch(i: number): void {
-        if (i <= index) {
+      function dispatch(index: number): void {
+        if (index <= last) {
           throw new Error('next() called multiple times');
         }
-        if (i === middlewares.length) {
+        last = index;
+        if (index === middlewares.length) {
           return final(pair);
         }
+        const next: () => void  = dispatch.bind(null, index + 1);
         if (direction === 'onGet') {
-          const fn = middlewares[i][direction] as GetMiddleware;
-          return fn(pair as NullablePair, dispatch.bind(null, i + 1));
+          const fn = middlewares[index][direction] as GetMiddleware;
+          fn(pair as NullablePair, next);
         } else {
-          const fn = middlewares[i][direction] as SetMiddleware;
-          return fn(pair as Pair, dispatch.bind(null, i + 1));
+          const fn = middlewares[index][direction] as SetMiddleware;
+          return fn(pair as Pair, next);
+        }
+        // If next is not called, call it
+        if (index === last) {
+          next();
         }
       }
     };
