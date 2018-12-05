@@ -1,5 +1,4 @@
 import assert = require('assert');
-import { stringify } from 'querystring';
 import {KevastAsync, KevastSync} from '../../src/index';
 import {NullablePair, Pair} from '../../src/Pair';
 import {AStorage} from '../util/AStorage';
