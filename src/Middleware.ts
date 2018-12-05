@@ -1,6 +1,7 @@
-import {Pair} from './Pair';
-export type SimplexMiddleware = (pair: Pair, next: () => void) => void;
-export interface IDuplexMiddleware {
-  onGet: SimplexMiddleware;
-  onSet: SimplexMiddleware;
+import {NullablePair , Pair} from './Pair';
+export type GetMiddleware = (pair: NullablePair, next: () => void) => void;
+export type SetMiddleware = (pair: Pair, next: () => void) => void;
+export interface IMiddleware {
+  onGet: GetMiddleware;
+  onSet: SetMiddleware;
 }

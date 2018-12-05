@@ -1,28 +1,28 @@
 import {AsyncStorage} from './AsyncStorage';
-import {IDuplexMiddleware, SimplexMiddleware} from './Middleware';
-import {Pair} from './Pair';
+import {GetMiddleware, IMiddleware, SetMiddleware} from './Middleware';
+import {NullablePair, Pair} from './Pair';
 import {SyncStorage} from './SyncStorage';
 
 export class KevastAsync {
   public onGet = {
-    use: (middleware: SimplexMiddleware) => {
+    use: (middleware: GetMiddleware) => {
       this.use({
         onGet: middleware,
-        onSet: (_: Pair) => { return; }
+        onSet: (_: Pair) => {}
       });
     }
   };
   public onSet = {
-    use: (middleware: SimplexMiddleware) => {
+    use: (middleware: SetMiddleware) => {
       this.use({
-        onGet: (_: Pair) => { return; },
+        onGet: (_: NullablePair) => {},
         onSet: middleware
       });
     }
   };
   private master: AsyncStorage;
   private redundancies: AsyncStorage[];
-  private middlewares: IDuplexMiddleware[];
+  private middlewares: IMiddleware[];
   constructor(master: AsyncStorage, ...redundancies: AsyncStorage[]) {
     this.master = master;
     this.redundancies = redundancies;
@@ -31,7 +31,7 @@ export class KevastAsync {
     }
     this.middlewares = [];
   }
-  public use(middleware: IDuplexMiddleware) {
+  public use(middleware: IMiddleware) {
     this.middlewares.push(middleware);
   }
   public clear(): Promise<void> {
@@ -47,8 +47,8 @@ export class KevastAsync {
     return this.master.entries();
   }
   public get(key: string, defaultValue: string | null = null): Promise<string | null> {
-    const pair: Pair = [key, null];
-    const handler = this.composeMiddleware(this.middlewares, 'onGet', async (innerPair: Pair) => {
+    const pair: NullablePair = [key, null];
+    const handler = this.composeMiddleware(this.middlewares, 'onGet', async (innerPair: NullablePair) => {
       pair[1] = await this.master.get(key);
     });
     return handler(pair).then(() => {
@@ -65,9 +65,9 @@ export class KevastAsync {
   }
   public set(key: string, value: string): Promise<void> {
     const pair: Pair = [key, value];
-    const handler = this.composeMiddleware(this.middlewares, 'onSet', async (innerPair: Pair) => {
+    const handler = this.composeMiddleware(this.middlewares, 'onSet', async (innerPair: Pair | NullablePair) => {
       return Promise.all(
-              [this.master, ...this.redundancies].map((storage) => storage.set(pair[0], pair[1] as string))
+              [this.master, ...this.redundancies].map((storage) => storage.set(pair[0], pair[1]))
             ).then(() => {});
     });
     return handler(pair);
@@ -78,13 +78,14 @@ export class KevastAsync {
   public values(): Promise<IterableIterator<string>> {
     return this.master.values();
   }
-  private composeMiddleware(middlewares: IDuplexMiddleware[],
+  private composeMiddleware(middlewares: IMiddleware[],
                             direction: 'onGet' | 'onSet',
-                            final: (pair: Pair) => Promise<void>): (pair: Pair) => Promise<void> {
+                            final: (pair: Pair | NullablePair) => Promise<void>)
+                            : (pair: Pair | NullablePair) => Promise<void> {
     if (direction === 'onGet') {
       middlewares = [...middlewares].reverse();
     }
-    return (pair: Pair): Promise<void> => {
+    return (pair: Pair | NullablePair): Promise<void> => {
       const index = -1;
       return dispatch(0);
       function dispatch(i: number): Promise<void> {
@@ -94,8 +95,13 @@ export class KevastAsync {
         if (i === middlewares.length) {
           return final(pair);
         }
-        const fn = middlewares[i][direction];
-        return Promise.resolve(fn(pair, dispatch.bind(null, i + 1)));
+        if (direction === 'onGet') {
+          const fn = middlewares[i][direction] as GetMiddleware;
+          return Promise.resolve(fn(pair as NullablePair, dispatch.bind(null, i + 1)));
+        } else {
+          const fn = middlewares[i][direction] as SetMiddleware;
+          return Promise.resolve(fn(pair as Pair, dispatch.bind(null, i + 1)));
+        }
       }
     };
   }

@@ -1,28 +1,28 @@
 import {AsyncStorage} from './AsyncStorage';
-import {IDuplexMiddleware, SimplexMiddleware} from './Middleware';
-import {Pair} from './Pair';
+import {GetMiddleware, IMiddleware, SetMiddleware} from './Middleware';
+import {NullablePair, Pair} from './Pair';
 import {SyncStorage} from './SyncStorage';
 
 export class KevastSync {
   public onGet = {
-    use: (middleware: SimplexMiddleware) => {
+    use: (middleware: GetMiddleware) => {
       this.use({
         onGet: middleware,
-        onSet: (_: Pair) => { return; }
+        onSet: (_: Pair) => {}
       });
     }
   };
   public onSet = {
-    use: (middleware: SimplexMiddleware) => {
+    use: (middleware: SetMiddleware) => {
       this.use({
-        onGet: (_: Pair) => { return; },
+        onGet: (_: NullablePair) => {},
         onSet: middleware
       });
     }
   };
   private master: SyncStorage;
   private redundancies: SyncStorage[];
-  private middlewares: IDuplexMiddleware[];
+  private middlewares: IMiddleware[];
   constructor(master: SyncStorage, ...redundancies: SyncStorage[]) {
     this.master = master;
     this.redundancies = redundancies;
@@ -31,7 +31,7 @@ export class KevastSync {
     }
     this.middlewares = [];
   }
-  public use(middleware: IDuplexMiddleware) {
+  public use(middleware: IMiddleware) {
     this.middlewares.push(middleware);
   }
   public clear(): void {
@@ -49,8 +49,8 @@ export class KevastSync {
     return this.master.entries();
   }
   public get(key: string, defaultValue: string | null = null): string | null {
-    const pair: Pair = [key, null];
-    const handler = this.composeMiddleware(this.middlewares, 'onGet', (innerPair: Pair) => {
+    const pair: NullablePair = [key, null];
+    const handler = this.composeMiddleware(this.middlewares, 'onGet', (innerPair: Pair | NullablePair) => {
       pair[1] = this.master.get(key);
     });
     handler(pair);
@@ -66,7 +66,7 @@ export class KevastSync {
   }
   public set(key: string, value: string): void {
     const pair: Pair = [key, value];
-    const handler = this.composeMiddleware(this.middlewares, 'onSet', (innerPair: Pair) => {
+    const handler = this.composeMiddleware(this.middlewares, 'onSet', (innerPair: Pair | NullablePair) => {
       this.master.set(pair[0], pair[1] as string);
       this.redundancies.forEach((storage) => storage.set(pair[0], pair[1] as string));
     });
@@ -78,13 +78,13 @@ export class KevastSync {
   public values(): IterableIterator<string> {
     return this.master.values();
   }
-  private composeMiddleware(middlewares: IDuplexMiddleware[],
+  private composeMiddleware(middlewares: IMiddleware[],
                             direction: 'onGet' | 'onSet',
-                            final: (pair: Pair) => void): (pair: Pair) => void {
+                            final: (pair: Pair | NullablePair) => void): (pair: Pair | NullablePair) => void {
     if (direction === 'onGet') {
       middlewares = [...middlewares].reverse();
     }
-    return (pair: Pair): void => {
+    return (pair: Pair | NullablePair): void => {
       const index = -1;
       return dispatch(0);
       function dispatch(i: number): void {
@@ -94,8 +94,13 @@ export class KevastSync {
         if (i === middlewares.length) {
           return final(pair);
         }
-        const fn = middlewares[i][direction];
-        return fn(pair, dispatch.bind(null, i + 1));
+        if (direction === 'onGet') {
+          const fn = middlewares[i][direction] as GetMiddleware;
+          return fn(pair as NullablePair, dispatch.bind(null, i + 1));
+        } else {
+          const fn = middlewares[i][direction] as SetMiddleware;
+          return fn(pair as Pair, dispatch.bind(null, i + 1));
+        }
       }
     };
   }
