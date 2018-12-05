@@ -3,7 +3,7 @@ const {KevastAsync, KevastSync} = require('./temp/src/index');
 const {AStorage} = require('./temp/test/util/AStorage');
 const {SStorage} = require('./temp/test/util/SStorage');
 
-describe('TypeScript: test sync mode middleware', () => {
+describe('JavaScript: test sync mode middleware', () => {
   it('Single onGet middleware', () => {
     const tracer = [];
     const kevast = new KevastSync(new SStorage());
@@ -103,7 +103,7 @@ describe('TypeScript: test sync mode middleware', () => {
   });
 });
 
-describe('TypeScript: test async mode middleware', () => {
+describe('JavaScript: test async mode middleware', () => {
   it('Single onGet middleware', async () => {
     const tracer = [];
     const kevast = new KevastAsync(new AStorage());
