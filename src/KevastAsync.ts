@@ -1,12 +1,8 @@
 import {AsyncStorage} from './AsyncStorage';
+import {IMiddleware} from './IMiddleware';
 import {SyncStorage} from './SyncStorage';
 type Pair = [string, string];
 type Interceptor = (pair: Pair) => void;
-
-interface IMiddleware {
-  onGet: Interceptor;
-  onSet: Interceptor;
-}
 
 export class KevastAsync {
   public onGet = {
