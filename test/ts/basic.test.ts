@@ -3,7 +3,7 @@ import {KevastAsync, KevastSync} from '../../src/index';
 import {AStorage} from '../util/AStorage';
 import {SStorage} from '../util/SStorage';
 
-describe('Test basic sync function', () => {
+describe('TypeScript: test basic sync function', () => {
   let kevast: KevastSync;
   before(() => {
     kevast = new KevastSync(new SStorage());
@@ -52,7 +52,7 @@ describe('Test basic sync function', () => {
   });
 });
 
-describe('Test basic async function', () => {
+describe('TypeScript: test basic async function', () => {
   let kevast: KevastAsync;
   before(() => {
     kevast = new KevastAsync(new AStorage());

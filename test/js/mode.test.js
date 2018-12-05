@@ -3,7 +3,7 @@ const {KevastAsync, KevastSync} = require('./temp/src/index');
 const {AStorage} = require('./temp/test/util/AStorage');
 const {SStorage} = require('./temp/test/util/SStorage');
 
-describe('Test Kevast mode', () => {
+describe('JavaScript: test Kevast mode', () => {
   it('Sync mode', () => {
     assert.doesNotThrow(() => {
       new KevastSync(new SStorage()).clear();

@@ -3,7 +3,7 @@ const {KevastAsync, KevastSync} = require('./temp/src/index');
 const {AStorage} = require('./temp/test/util/AStorage');
 const {SStorage} = require('./temp/test/util/SStorage');
 
-describe('Test basic sync function', () => {
+describe('JavaScript: test basic sync function', () => {
   let kevast;
   before(() => {
     kevast = new KevastSync(new SStorage());
@@ -52,7 +52,7 @@ describe('Test basic sync function', () => {
   });
 });
 
-describe('Test basic async function', () => {
+describe('JavaScript: test basic async function', () => {
   let kevast;
   before(() => {
     kevast = new KevastAsync(new AStorage());
