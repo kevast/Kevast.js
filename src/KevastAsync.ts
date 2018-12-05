@@ -2,6 +2,7 @@ import {AsyncStorage} from './AsyncStorage';
 import {GetMiddleware, IMiddleware, SetMiddleware} from './Middleware';
 import {NullablePair, Pair} from './Pair';
 import {SyncStorage} from './SyncStorage';
+type Storage = AsyncStorage | SyncStorage;
 
 export class KevastAsync {
   public onGet = {
@@ -20,10 +21,10 @@ export class KevastAsync {
       });
     }
   };
-  private master: AsyncStorage;
-  private redundancies: AsyncStorage[];
+  private master: Storage;
+  private redundancies: Storage[];
   private middlewares: IMiddleware[];
-  constructor(master: AsyncStorage, ...redundancies: AsyncStorage[]) {
+  constructor(master: Storage, ...redundancies: Storage[]) {
     this.master = master;
     this.redundancies = redundancies;
     if ([master, ...redundancies].every((storage) => storage instanceof SyncStorage)) {
@@ -38,12 +39,18 @@ export class KevastAsync {
     return Promise.all([this.master, ...this.redundancies].map((storage) => storage.clear())).then(() => {});
   }
   public has(key: string): Promise<boolean> {
+    if (this.master instanceof SyncStorage) {
+      return Promise.resolve(this.master.has(key));
+    }
     return this.master.has(key);
   }
   public delete(key: string): Promise<void> {
     return Promise.all([this.master, ...this.redundancies].map((storage) => storage.delete(key))).then(() => {});
   }
   public entries(): Promise<IterableIterator<Pair>> {
+    if (this.master instanceof SyncStorage) {
+      return Promise.resolve(this.master.entries());
+    }
     return this.master.entries();
   }
   public async get(key: string, defaultValue: string | null = null): Promise<string | null> {
@@ -60,6 +67,9 @@ export class KevastAsync {
     }
   }
   public keys(): Promise<IterableIterator<string>> {
+    if (this.master instanceof SyncStorage) {
+      return Promise.resolve(this.master.keys());
+    }
     return this.master.keys();
   }
   public set(key: string, value: string): Promise<void> {
@@ -72,9 +82,15 @@ export class KevastAsync {
     return handler(pair);
   }
   public size(): Promise<number> {
+    if (this.master instanceof SyncStorage) {
+      return Promise.resolve(this.master.size());
+    }
     return this.master.size();
   }
   public values(): Promise<IterableIterator<string>> {
+    if (this.master instanceof SyncStorage) {
+      return Promise.resolve(this.master.values());
+    }
     return this.master.values();
   }
   private composeMiddleware(middlewares: IMiddleware[],
