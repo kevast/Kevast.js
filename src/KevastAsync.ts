@@ -46,26 +46,25 @@ export class KevastAsync {
   public entries(): Promise<IterableIterator<Pair>> {
     return this.master.entries();
   }
-  public get(key: string, defaultValue: string | null = null): Promise<string | null> {
+  public async get(key: string, defaultValue: string | null = null): Promise<string | null> {
     const pair: NullablePair = [key, null];
-    const handler = this.composeMiddleware(this.middlewares, 'onGet', async (innerPair: NullablePair) => {
+    const handler = this.composeMiddleware(this.middlewares, 'onGet', async () => {
       pair[1] = await this.master.get(pair[0]);
     });
-    return handler(pair).then(() => {
-      const result = pair[1];
-      if (result === null || result === undefined) {
-        return defaultValue;
-      } else {
-        return result;
-      }
-    });
+    await handler(pair);
+    const result = pair[1];
+    if (result === null || result === undefined) {
+      return defaultValue;
+    } else {
+      return result;
+    }
   }
   public keys(): Promise<IterableIterator<string>> {
     return this.master.keys();
   }
   public set(key: string, value: string): Promise<void> {
     const pair: Pair = [key, value];
-    const handler = this.composeMiddleware(this.middlewares, 'onSet', async (innerPair: Pair | NullablePair) => {
+    const handler = this.composeMiddleware(this.middlewares, 'onSet', async () => {
       return Promise.all(
               [this.master, ...this.redundancies].map((storage) => storage.set(pair[0], pair[1]))
             ).then(() => {});
@@ -80,7 +79,7 @@ export class KevastAsync {
   }
   private composeMiddleware(middlewares: IMiddleware[],
                             direction: 'onGet' | 'onSet',
-                            final: (pair: Pair | NullablePair) => Promise<void>)
+                            final: () => Promise<void>)
                             : (pair: Pair | NullablePair) => Promise<void> {
     if (direction === 'onGet') {
       middlewares = [...middlewares].reverse();
@@ -88,29 +87,26 @@ export class KevastAsync {
     return (pair: Pair | NullablePair): Promise<void> => {
       let last = -1;
       return dispatch(0);
-      function dispatch(index: number): Promise<void> {
+      async function dispatch(index: number): Promise<void> {
         if (index <= last) {
-          return Promise.reject(new Error('next() called multiple times'));
+          throw new Error('next() called multiple times');
         }
         last = index;
         if (index === middlewares.length) {
-          return final(pair);
+          return final();
         }
-        const next: () => void  = dispatch.bind(null, index + 1);
-        let result: Promise<void>;
+        const next: () => Promise<void>  = dispatch.bind(null, index + 1);
         if (direction === 'onGet') {
           const fn = middlewares[index][direction] as GetMiddleware;
-          result = Promise.resolve(fn(pair as NullablePair, dispatch.bind(null, index + 1)));
+          await fn(pair as NullablePair, next);
         } else {
           const fn = middlewares[index][direction] as SetMiddleware;
-          result = Promise.resolve(fn(pair as Pair, dispatch.bind(null, index + 1)));
+          await fn(pair as Pair, next);
         }
-        return result.then(() => {
-          // If next is not called, call it
-          if (index === last) {
-            return next();
-          }
-        });
+        // If next is not called, call it
+        if (index === last) {
+          await next();
+        }
       }
     };
   }

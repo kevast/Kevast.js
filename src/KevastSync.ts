@@ -50,7 +50,7 @@ export class KevastSync {
   }
   public get(key: string, defaultValue: string | null = null): string | null {
     const pair: NullablePair = [key, null];
-    const handler = this.composeMiddleware(this.middlewares, 'onGet', (innerPair: Pair | NullablePair) => {
+    const handler = this.composeMiddleware(this.middlewares, 'onGet', () => {
       pair[1] = this.master.get(pair[0]);
     });
     handler(pair);
@@ -66,7 +66,7 @@ export class KevastSync {
   }
   public set(key: string, value: string): void {
     const pair: Pair = [key, value];
-    const handler = this.composeMiddleware(this.middlewares, 'onSet', (innerPair: Pair | NullablePair) => {
+    const handler = this.composeMiddleware(this.middlewares, 'onSet', () => {
       this.master.set(pair[0], pair[1] as string);
       this.redundancies.forEach((storage) => storage.set(pair[0], pair[1] as string));
     });
@@ -80,7 +80,7 @@ export class KevastSync {
   }
   private composeMiddleware(middlewares: IMiddleware[],
                             direction: 'onGet' | 'onSet',
-                            final: (pair: Pair | NullablePair) => void): (pair: Pair | NullablePair) => void {
+                            final: () => void): (pair: Pair | NullablePair) => void {
     if (direction === 'onGet') {
       middlewares = [...middlewares].reverse();
     }
@@ -93,7 +93,7 @@ export class KevastSync {
         }
         last = index;
         if (index === middlewares.length) {
-          return final(pair);
+          return final();
         }
         const next: () => void  = dispatch.bind(null, index + 1);
         if (direction === 'onGet') {
@@ -101,7 +101,7 @@ export class KevastSync {
           fn(pair as NullablePair, next);
         } else {
           const fn = middlewares[index][direction] as SetMiddleware;
-          return fn(pair as Pair, next);
+          fn(pair as Pair, next);
         }
         // If next is not called, call it
         if (index === last) {
