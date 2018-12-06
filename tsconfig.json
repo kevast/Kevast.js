@@ -4,8 +4,7 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "declaration": true,
-    "target": "es6",
-    "strict": true
+    "target": "es6"
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/__tests__/*"]
