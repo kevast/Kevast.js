@@ -3,10 +3,15 @@ const path = require('path');
 function generateConfig(name) {
   const mode = name.includes('min') ? 'production' : 'development';
   return {
-    entry: './src/index.ts',
+    entry: ['@babel/polyfill', './src/index.ts'],
     mode,
     module: {
       rules: [
+        {
+          test: /\.ts?$/,
+          loader: 'babel-loader',
+          exclude: /node_modules/
+        },
         {
           test: /\.ts?$/,
           use: 'ts-loader',
