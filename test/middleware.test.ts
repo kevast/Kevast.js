@@ -1,6 +1,5 @@
 import assert = require('assert');
 import Kevast = require('../src/index');
-import {NullablePair, Pair} from '../src/Pair';
 import {AStorage} from './util/AStorage';
 import {SStorage} from './util/SStorage';
 
@@ -90,13 +89,13 @@ describe('Test sync mode middleware', () => {
   });
   it('Call next multiple times', () => {
     let kevast = new Kevast.KevastSync(new SStorage());
-    kevast.onGet.use((_: NullablePair, next: Function) => {
+    kevast.onGet.use((_: [string, string], next: Function) => {
       next();
       next();
     });
     assert.throws(() => kevast.get('key'));
     kevast = new Kevast.KevastSync(new SStorage());
-    kevast.onSet.use((_: Pair, next: Function) => {
+    kevast.onSet.use((_: [string, string], next: Function) => {
       next();
       next();
     });
@@ -190,7 +189,7 @@ describe('Test async mode middleware', () => {
   });
   it('Call next multiple times', async () => {
     let kevast = new Kevast(new AStorage());
-    kevast.onGet.use(async (pair: NullablePair, next: Function) => {
+    kevast.onGet.use(async (pair: [string, string], next: Function) => {
       await next();
       await next();
     });
@@ -201,7 +200,7 @@ describe('Test async mode middleware', () => {
       assert(err.message === 'next() called multiple times');
     }
     kevast = new Kevast(new AStorage());
-    kevast.onSet.use(async (pair: Pair, next: Function) => {
+    kevast.onSet.use(async (pair: [string, string], next: Function) => {
       await next();
       await next();
     });
@@ -214,7 +213,7 @@ describe('Test async mode middleware', () => {
   });
 });
 
-function onSyncGet(tracer: string[], tag: string, pair: NullablePair, next: Function) {
+function onSyncGet(tracer: string[], tag: string, pair: [string, string], next: Function) {
   tracer.push(`beforeGet:${tag}`);
   pair[0] += tag;
   next();
@@ -224,7 +223,7 @@ function onSyncGet(tracer: string[], tag: string, pair: NullablePair, next: Func
   tracer.push(`afterGet:${tag}`);
 }
 
-async function onAsyncGet(tracer: string[], tag: string, pair: NullablePair, next: Function) {
+async function onAsyncGet(tracer: string[], tag: string, pair: [string, string], next: Function) {
   tracer.push(`beforeGet:${tag}`);
   pair[0] += tag;
   await next();
@@ -234,7 +233,7 @@ async function onAsyncGet(tracer: string[], tag: string, pair: NullablePair, nex
   tracer.push(`afterGet:${tag}`);
 }
 
-function onSyncSet(tracer: string[], tag: string, pair: Pair, next: Function) {
+function onSyncSet(tracer: string[], tag: string, pair: [string, string], next: Function) {
   tracer.push(`beforeSet:${tag}`);
   pair[0] += tag;
   pair[1] += tag;
@@ -242,7 +241,7 @@ function onSyncSet(tracer: string[], tag: string, pair: Pair, next: Function) {
   tracer.push(`afterSet:${tag}`);
 }
 
-async function onAsyncSet(tracer: string[], tag: string, pair: Pair, next: Function) {
+async function onAsyncSet(tracer: string[], tag: string, pair: [string, string], next: Function) {
   tracer.push(`beforeSet:${tag}`);
   pair[0] += tag;
   pair[1] += tag;
@@ -252,7 +251,7 @@ async function onAsyncSet(tracer: string[], tag: string, pair: Pair, next: Funct
 
 function syncDuplex(tracer: string[], tag: string) {
   return {
-    onGet: (pair: NullablePair, next: Function) => {
+    onGet: (pair: [string, string], next: Function) => {
       tracer.push(`beforeGet:${tag}`);
       next();
       if (pair[1]) {
@@ -260,7 +259,7 @@ function syncDuplex(tracer: string[], tag: string) {
       }
       tracer.push(`afterGet:${tag}`);
     },
-    onSet: (pair: Pair, next: Function) => {
+    onSet: (pair: [string, string], next: Function) => {
       tracer.push(`beforeSet:${tag}`);
       pair[1] += tag;
       next();
@@ -271,7 +270,7 @@ function syncDuplex(tracer: string[], tag: string) {
 
 function asyncDuplex(tracer: string[], tag: string) {
   return {
-    onGet: async (pair: NullablePair, next: Function) => {
+    onGet: async (pair: [string, string], next: Function) => {
       tracer.push(`beforeGet:${tag}`);
       await next();
       if (pair[1]) {
@@ -279,7 +278,7 @@ function asyncDuplex(tracer: string[], tag: string) {
       }
       tracer.push(`afterGet:${tag}`);
     },
-    onSet: async (pair: Pair, next: Function) => {
+    onSet: async (pair: [string, string], next: Function) => {
       tracer.push(`beforeSet:${tag}`);
       pair[1] += tag;
       await next();

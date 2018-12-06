@@ -1,10 +1,11 @@
-import {GetMiddleware, IMiddleware, SetMiddleware} from './Middleware';
-import {NullablePair, Pair} from './Pair';
-import {IAsyncStorage, ISyncStorage} from './Storage';
+import {IDuplexMiddleware, SimplexMiddleware} from './Middleware';
+import {Pair} from './Pair';
+import {ISyncStorage} from './Storage';
 
 export class KevastSync {
   public onGet = {
-    use: (middleware: GetMiddleware) => {
+    use: (middleware: SimplexMiddleware) => {
+      if (!middleware) { return; }
       this.use({
         onGet: middleware,
         onSet: () => {}
@@ -12,7 +13,8 @@ export class KevastSync {
     }
   };
   public onSet = {
-    use: (middleware: SetMiddleware) => {
+    use: (middleware: SimplexMiddleware) => {
+      if (!middleware) { return; }
       this.use({
         onGet: () => {},
         onSet: middleware
@@ -21,53 +23,61 @@ export class KevastSync {
   };
   private master: ISyncStorage;
   private redundancies: ISyncStorage[];
-  private middlewares: IMiddleware[];
+  private middlewares: IDuplexMiddleware[];
   constructor(master: ISyncStorage, ...redundancies: ISyncStorage[]) {
+    if (!master) {
+      throw TypeError('Master storage is required');
+    }
     this.master = master;
     this.redundancies = redundancies;
-    // if ([master, ...redundancies].some((storage) => storage.kind === 'IASyncStorage')) {
-    //   throw TypeError('KevastSync only accept SyncStorage');
-    // }
     this.middlewares = [];
   }
-  public use(middleware: IMiddleware) {
+  public use(middleware: IDuplexMiddleware) {
+    if (!middleware) { return; }
     this.middlewares.push(middleware);
   }
-  public clear(): void {
+  public clear() {
     this.master.clear();
     this.redundancies.forEach((storage) => storage.clear());
   }
   public has(key: string): boolean {
+    if (typeof key !== 'string') { return false; }
     return this.master.has(key);
   }
-  public delete(key: string): void {
+  public delete(key: string) {
+    if (typeof key !== 'string') { return; }
     this.master.delete(key);
     this.redundancies.forEach((storage) => storage.delete(key));
   }
   public entries(): IterableIterator<Pair> {
     return this.master.entries();
   }
-  public get(key: string, defaultValue: string | null = null): string | null {
-    const pair: NullablePair = [key, null];
+  public get(key: string, defaultValue: string = null): string {
+    if (typeof key !== 'string') { return null; }
+    if (typeof defaultValue !== 'string' && defaultValue !== null) { defaultValue = null; }
+    const pair: Pair = [key, null];
     const handler = this.composeMiddleware(this.middlewares, 'onGet', () => {
       pair[1] = this.master.get(pair[0]);
     });
     handler(pair);
     const result = pair[1];
-    if (result === null || result === undefined) {
-      return defaultValue;
-    } else {
+    if (typeof result === 'string') {
       return result;
+    } else {
+      return defaultValue;
     }
   }
   public keys(): IterableIterator<string> {
     return this.master.keys();
   }
-  public set(key: string, value: string): void {
+  public set(key: string, value: string) {
+    if (typeof key !== 'string' || typeof value !== 'string') {
+      throw TypeError('Key or value must be string');
+    }
     const pair: Pair = [key, value];
     const handler = this.composeMiddleware(this.middlewares, 'onSet', () => {
-      this.master.set(pair[0], pair[1] as string);
-      this.redundancies.forEach((storage) => storage.set(pair[0], pair[1] as string));
+      this.master.set(pair[0], pair[1]);
+      this.redundancies.forEach((storage) => storage.set(pair[0], pair[1]));
     });
     handler(pair);
   }
@@ -77,16 +87,18 @@ export class KevastSync {
   public values(): IterableIterator<string> {
     return this.master.values();
   }
-  private composeMiddleware(middlewares: IMiddleware[],
-                            direction: 'onGet' | 'onSet',
-                            final: () => void): (pair: Pair | NullablePair) => void {
+  private composeMiddleware(
+    middlewares: IDuplexMiddleware[],
+    direction: 'onGet' | 'onSet',
+    final: () => void
+  ): (pair: Pair) => void {
     if (direction === 'onGet') {
       middlewares = [...middlewares].reverse();
     }
-    return (pair: Pair | NullablePair): void => {
+    return (pair: Pair) => {
       let last = -1;
       return dispatch(0);
-      function dispatch(index: number): void {
+      function dispatch(index: number) {
         if (index <= last) {
           throw new Error('next() called multiple times');
         }
@@ -95,13 +107,8 @@ export class KevastSync {
           return final();
         }
         const next: () => void  = dispatch.bind(null, index + 1);
-        if (direction === 'onGet') {
-          const fn = middlewares[index][direction] as GetMiddleware;
-          fn(pair as NullablePair, next);
-        } else {
-          const fn = middlewares[index][direction] as SetMiddleware;
-          fn(pair as Pair, next);
-        }
+        const middleware = middlewares[index][direction];
+        middleware(pair, next);
         // If next is not called, call it
         if (index === last) {
           next();

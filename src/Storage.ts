@@ -5,7 +5,7 @@ export interface IAsyncStorage {
   has: (key: string) => Promise<boolean>;
   delete: (key: string) => Promise<void>;
   entries: () => Promise<IterableIterator<Pair>>;
-  get: (key: string) => Promise<string | null | undefined>;
+  get: (key: string) => Promise<string>;
   keys: () => Promise<IterableIterator<string>>;
   set: (key: string, value: string) => Promise<void>;
   size: () => Promise<number>;
@@ -17,9 +17,11 @@ export interface ISyncStorage {
   has: (key: string) => boolean;
   delete: (key: string) => void;
   entries: () => IterableIterator<Pair>;
-  get: (key: string) => string | null | undefined;
+  get: (key: string) => string;
   keys: () => IterableIterator<string>;
   set: (key: string, value: string) => void;
   size: () => number;
   values: () => IterableIterator<string>;
 }
+
+export type Storage = IAsyncStorage | ISyncStorage;
