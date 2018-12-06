@@ -12,13 +12,18 @@
     "middleware"
   ],
   "scripts": {
-    "lint": "tslint -p tsconfig.json",
-    "test": "mocha --require espower-typescript/guess \"test/**/*.ts\"",
-    "build": "npm run build:nodejs && npm run build:browser",
     "clean": "rm -rf ./dist/*",
-    "build:browser": "webpack",
-    "build:nodejs": "tsc",
+    "lint": "tslint -p tsconfig.json",
+    "test": "mocha --require espower-typescript/guess \"test/**/*.ts\" && npm run test:browser",
+    "build": "npm run build:nodejs && npm run build:browser",
+
     "prebuild": "npm run clean",
+    "build:nodejs": "tsc",
+    "build:browser": "webpack",
+
+    "pretest:browser": "node ./test/browser/build.js",
+    "test:browser": "open ./test/browser/test.html",
+
     "prepublishOnly": "npm run test && npm run build"
   },
   "files": [
