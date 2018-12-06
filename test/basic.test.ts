@@ -1,13 +1,10 @@
 import assert = require('assert');
-import {KevastAsync, KevastSync} from '../src/index';
+import Kevast = require('../src/index');
 import {AStorage} from './util/AStorage';
 import {SStorage} from './util/SStorage';
 
 describe('Test basic sync function', () => {
-  let kevast: KevastSync;
-  before(() => {
-    kevast = new KevastSync(new SStorage());
-  });
+  const kevast = new Kevast.KevastSync(new SStorage());
   it('Get', () => {
     assert(kevast.get('key1') === null);
     assert(kevast.get('key1', 'default') === 'default');
@@ -53,9 +50,9 @@ describe('Test basic sync function', () => {
 });
 
 describe('Test basic async function', () => {
-  let kevast: KevastAsync;
+  let kevast: Kevast;
   before(() => {
-    kevast = new KevastAsync(new AStorage());
+    kevast = new Kevast(new AStorage());
   });
   it('Get', async () => {
     assert(await kevast.get('key1') === null);
