@@ -31,14 +31,27 @@ Specific version
 ## Hello Kevast
 ```javascript
 const Kevast = require('kevast');
+// Install these package with yarn or npm
 const KevastMemory = require('kevast-memory');
 const KevastFile = require('kevast-file');
 const KevastEncrypt = require('kevast-encrypt');
 
-const kevast = new Kevast(new KevastMemory(), new KevastFile());
-kevast.use(new KevastEncrypt());
+// Using memory as master storage,
+// and file as redundancy storage
+const kevast = new Kevast(new KevastMemory(), new KevastFile(...));
 
+// Using encryption as a middleware
+kevast.use(new KevastEncrypt(...));
+
+// Save key-value data
 await kevast.set('key', Math.random().toString());
+
+// According to configuration,
+// data will be saved in both memory and file
+// after encryption
+
+// Read data from memory
+// and decrypt
 const value = await kevast.get('key');
 console.log(value);
 ```
@@ -47,6 +60,9 @@ console.log(value);
 - [Storage]('./docs/storage.md')
 - [Redundancy]('./docs/redundancy.md)
 - [Middleware]('./docs/middleware.md)
+
+## More Examples
+TODO
 
 ## Compatibility
 Kevast requires ![Node.js v6.0.0](https://img.shields.io/badge/Node.js-v6.0.0-brightgreen.png) or higher.
