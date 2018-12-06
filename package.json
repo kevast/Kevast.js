@@ -1,5 +1,5 @@
 {
-  "name": "kevast.js",
+  "name": "kevast",
   "version": "0.0.1",
   "description": "Kevast for browser and Node.js. One key-value interface, all kinds of storages.",
   "main": "dist/node/index.js",
