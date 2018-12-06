@@ -26,6 +26,10 @@
   "files": [
     "dist/**/*"
   ],
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "engineStrict": true,
   "repository": "git@github.com:kevast/kevast.js.git",
   "author": "Andie <zchangan@163.com>",
   "license": "MIT",
