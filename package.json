@@ -1,6 +1,6 @@
 {
   "name": "kevast",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Kevast for browser and Node.js. One key-value interface, all kinds of storages.",
   "main": "dist/nodejs/index.js",
   "keywords": ["key", "value", "key-value", "storage", "redundancy", "middleware"],
@@ -15,7 +15,8 @@
     "test:js": "mocha --require intelli-espower-loader \"test/**/*.js\"",
     "prebuild": "npm run clean",
     "pretest:js": "tsc -t es6 --strict -m commonjs --noImplicitAny test/util/AStorage.ts test/util/SStorage.ts src/index.ts --outDir test/js/temp",
-    "posttest:js": "rm -rf test/js/temp"
+    "posttest:js": "rm -rf test/js/temp",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist/**/*"
