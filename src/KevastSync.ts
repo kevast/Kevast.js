@@ -1,7 +1,6 @@
-import {AsyncStorage} from './AsyncStorage';
 import {GetMiddleware, IMiddleware, SetMiddleware} from './Middleware';
 import {NullablePair, Pair} from './Pair';
-import {SyncStorage} from './SyncStorage';
+import {IAsyncStorage, ISyncStorage} from './Storage';
 
 export class KevastSync {
   public onGet = {
@@ -20,15 +19,15 @@ export class KevastSync {
       });
     }
   };
-  private master: SyncStorage;
-  private redundancies: SyncStorage[];
+  private master: ISyncStorage;
+  private redundancies: ISyncStorage[];
   private middlewares: IMiddleware[];
-  constructor(master: SyncStorage, ...redundancies: SyncStorage[]) {
+  constructor(master: ISyncStorage, ...redundancies: ISyncStorage[]) {
     this.master = master;
     this.redundancies = redundancies;
-    if ([master, ...redundancies].some((storage) => storage instanceof AsyncStorage)) {
-      throw TypeError('KevastSync only accept SyncStorage');
-    }
+    // if ([master, ...redundancies].some((storage) => storage.kind === 'IASyncStorage')) {
+    //   throw TypeError('KevastSync only accept SyncStorage');
+    // }
     this.middlewares = [];
   }
   public use(middleware: IMiddleware) {

@@ -1,10 +1,11 @@
-import {AsyncStorage} from './AsyncStorage';
+import { KevastSync } from './KevastSync';
 import {GetMiddleware, IMiddleware, SetMiddleware} from './Middleware';
 import {NullablePair, Pair} from './Pair';
-import {SyncStorage} from './SyncStorage';
-type Storage = AsyncStorage | SyncStorage;
+import {IAsyncStorage, ISyncStorage} from './Storage';
+type Storage = IAsyncStorage | ISyncStorage;
 
-export class KevastAsync {
+export class Kevast {
+  public static KevastSync = KevastSync;
   public onGet = {
     use: (middleware: GetMiddleware) => {
       this.use({
@@ -27,9 +28,9 @@ export class KevastAsync {
   constructor(master: Storage, ...redundancies: Storage[]) {
     this.master = master;
     this.redundancies = redundancies;
-    if ([master, ...redundancies].every((storage) => storage instanceof SyncStorage)) {
-      throw TypeError('All storages are SyncStorage, please use KevastSync');
-    }
+    // if ([master, ...redundancies].every((storage) => storage.kind === 'ISyncStorage')) {
+    //   throw TypeError('All storages are SyncStorage, please use KevastSync');
+    // }
     this.middlewares = [];
   }
   public use(middleware: IMiddleware) {
@@ -39,19 +40,21 @@ export class KevastAsync {
     return Promise.all([this.master, ...this.redundancies].map((storage) => storage.clear())).then(() => {});
   }
   public has(key: string): Promise<boolean> {
-    if (this.master instanceof SyncStorage) {
-      return Promise.resolve(this.master.has(key));
+    const result = this.master.has(key);
+    if (result instanceof Promise) {
+      return result;
     }
-    return this.master.has(key);
+    return Promise.resolve(result);
   }
   public delete(key: string): Promise<void> {
     return Promise.all([this.master, ...this.redundancies].map((storage) => storage.delete(key))).then(() => {});
   }
   public entries(): Promise<IterableIterator<Pair>> {
-    if (this.master instanceof SyncStorage) {
-      return Promise.resolve(this.master.entries());
+    const result = this.master.entries();
+    if (result instanceof Promise) {
+      return result;
     }
-    return this.master.entries();
+    return Promise.resolve(result);
   }
   public async get(key: string, defaultValue: string | null = null): Promise<string | null> {
     const pair: NullablePair = [key, null];
@@ -67,10 +70,11 @@ export class KevastAsync {
     }
   }
   public keys(): Promise<IterableIterator<string>> {
-    if (this.master instanceof SyncStorage) {
-      return Promise.resolve(this.master.keys());
+    const result = this.master.keys();
+    if (result instanceof Promise) {
+      return result;
     }
-    return this.master.keys();
+    return Promise.resolve(result);
   }
   public set(key: string, value: string): Promise<void> {
     const pair: Pair = [key, value];
@@ -82,16 +86,18 @@ export class KevastAsync {
     return handler(pair);
   }
   public size(): Promise<number> {
-    if (this.master instanceof SyncStorage) {
-      return Promise.resolve(this.master.size());
+    const result = this.master.size();
+    if (result instanceof Promise) {
+      return result;
     }
-    return this.master.size();
+    return Promise.resolve(result);
   }
   public values(): Promise<IterableIterator<string>> {
-    if (this.master instanceof SyncStorage) {
-      return Promise.resolve(this.master.values());
+    const result = this.master.values();
+    if (result instanceof Promise) {
+      return result;
     }
-    return this.master.values();
+    return Promise.resolve(result);
   }
   private composeMiddleware(middlewares: IMiddleware[],
                             direction: 'onGet' | 'onSet',
