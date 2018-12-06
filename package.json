@@ -3,19 +3,22 @@
   "version": "0.0.2",
   "description": "Kevast for browser and Node.js. One key-value interface, all kinds of storages.",
   "main": "dist/nodejs/index.js",
-  "keywords": ["key", "value", "key-value", "storage", "redundancy", "middleware"],
+  "keywords": [
+    "key",
+    "value",
+    "key-value",
+    "storage",
+    "redundancy",
+    "middleware"
+  ],
   "scripts": {
     "lint": "tslint -p tsconfig.json",
-    "test": "npm run test:ts && npm run test:js",
+    "test": "mocha --require espower-typescript/guess \"test/**/*.ts\"",
     "build": "npm run build:nodejs && npm run build:browser",
     "clean": "rm -rf ./dist/*",
     "build:browser": "webpack",
     "build:nodejs": "tsc",
-    "test:ts": "mocha --require espower-typescript/guess \"test/**/*.ts\"",
-    "test:js": "mocha --require intelli-espower-loader \"test/**/*.js\"",
     "prebuild": "npm run clean",
-    "pretest:js": "tsc -t es6 --strict -m commonjs --noImplicitAny test/util/AStorage.ts test/util/SStorage.ts src/index.ts --outDir test/js/temp",
-    "posttest:js": "rm -rf test/js/temp",
     "prepublishOnly": "npm run build"
   },
   "files": [
@@ -29,7 +32,6 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.12",
     "espower-typescript": "^9.0.1",
-    "intelli-espower-loader": "^1.0.1",
     "mocha": "^5.2.0",
     "power-assert": "^1.6.1",
     "ts-loader": "^5.3.1",
