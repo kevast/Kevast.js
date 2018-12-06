@@ -1,10 +1,9 @@
 import {Pair} from '../../src/Pair';
-import {SyncStorage} from '../../src/SyncStorage';
+import {ISyncStorage} from '../../src/Storage';
 
-export class SStorage extends SyncStorage {
+export class SStorage implements ISyncStorage {
   private storage: Map<string, string>;
   public constructor(storage: Map<string, string> = new Map()) {
-    super();
     this.storage = storage;
   }
   public clear(): void {

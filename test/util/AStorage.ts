@@ -1,10 +1,9 @@
-import {AsyncStorage} from '../../src/AsyncStorage';
 import {Pair} from '../../src/Pair';
+import {IAsyncStorage} from '../../src/Storage';
 
-export class AStorage extends AsyncStorage {
+export class AStorage implements IAsyncStorage {
   private storage: Map<string, string>;
   public constructor(storage: Map<string, string> = new Map()) {
-    super();
     this.storage = storage;
   }
   public clear(): Promise<void> {
