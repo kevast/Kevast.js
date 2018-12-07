@@ -57,9 +57,9 @@ console.log(value);
 ```
 
 ## Documentation
-- [Storage]('./docs/storage.md')
-- [Redundancy]('./docs/redundancy.md)
-- [Middleware]('./docs/middleware.md)
+- [Storage](./docs/storage.md)
+- [Redundancy](./docs/redundancy.md)
+- [Middleware](./docs/middleware.md)
 
 ## More Examples
 TODO
