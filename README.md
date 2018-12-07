@@ -20,9 +20,9 @@ npm install kevast
 
 ### Browser
 Latest version
-```
+```html
 <script src="https://cdn.jsdelivr.net/npm/kevast/dist/browser/kevast.min.js"></script>
-```
+```html
 Specific version
 ```
 <script src="https://cdn.jsdelivr.net/npm/kevast@0.0.4/dist/browser/kevast.min.js"></script>
