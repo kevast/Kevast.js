@@ -92,3 +92,6 @@ Both Node.js and browser version will be tested. Note that it will finally open 
 
 ## LICENSE
 MIT
+
+## Why the funky name?
+Kevast stands for ke(y) va(lue) st(orage).
