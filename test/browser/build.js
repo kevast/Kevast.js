@@ -1,14 +1,9 @@
 const webpack = require('webpack');;
-const fs = require('fs');
 const path = require('path');
-const testPath = path.resolve(__dirname, '..');
 
 const entry = {
-  'kevast': ['@babel/polyfill', path.resolve(__dirname, '../../src/index.ts')]
+  'test': ['@babel/polyfill', path.resolve(__dirname, './test.ts')]
 };
-fs.readdirSync(testPath).filter(name => name.includes('.test.ts')).forEach(name => {
-  entry[name.substr(0, name.indexOf('.ts'))] = ['@babel/polyfill', path.resolve(testPath, name)];
-});
 
 webpack({
   entry,
@@ -32,6 +27,6 @@ webpack({
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'temp')
+    path: path.resolve(__dirname)
   }
 }).run();
