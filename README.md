@@ -65,13 +65,16 @@ console.log(value);
 TODO
 
 ## Compatibility
-Kevast requires ![Node.js v6.0.0](https://img.shields.io/badge/Node.js-v6.0.0-brightgreen.png) or higher.
+![Node.js v6.0.0](https://img.shields.io/badge/Node.js-v6.0.0-brightgreen.svg)
 
-Latest version of these browsers:
+Kevast requires Node.js v6.0.0 or higher.
 
-|![chrome](https://github.com/alrra/browser-logos/raw/master/src/chrome/chrome_64x64.png)|![firefox](https://github.com/alrra/browser-logos/raw/master/src/firefox/firefox_64x64.png)|![safari](https://github.com/alrra/browser-logos/raw/master/src/safari/safari_64x64.png)|![opera](https://github.com/alrra/browser-logos/raw/master/src/opera/opera_64x64.png)|![edge](https://github.com/alrra/browser-logos/raw/master/src/edge/edge_64x64.png)|![ie11](https://github.com/alrra/browser-logos/blob/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_64x64.png)|
-|:-:|:-:|:-:|:-:|:-:|:-:|
-|✅|✅|✅|✅|✅|✅|
+Browser support:
+
+|![chrome](https://github.com/alrra/browser-logos/raw/master/src/chrome/chrome_64x64.png)|![firefox](https://github.com/alrra/browser-logos/raw/master/src/firefox/firefox_64x64.png)|![safari](https://github.com/alrra/browser-logos/raw/master/src/safari/safari_64x64.png)|![opera](https://github.com/alrra/browser-logos/raw/master/src/opera/opera_64x64.png)|![edge](https://github.com/alrra/browser-logos/raw/master/src/edge/edge_64x64.png)|![ie11](https://github.com/alrra/browser-logos/raw/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_64x64.png)|![ios](https://github.com/alrra/browser-logos/raw/master/src/safari-ios/safari-ios_64x64.png)|![android](https://github.com/alrra/browser-logos/raw/master/src/archive/android/android_64x64.png)|
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|70|63|≤11 12|55|17|9 10 11|≤10 11 12|≤3 4|
+|✅|✅|✅|✅|✅|✅|✅|✅|
 
 ## Build
 ```bash
