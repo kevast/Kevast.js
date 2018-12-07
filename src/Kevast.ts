@@ -49,7 +49,7 @@ export class Kevast {
     if (typeof key !== 'string') { return; }
     await Promise.all([this.master, ...this.redundancies].map((storage) => storage.delete(key)));
   }
-  public async entries(): Promise<IterableIterator<Pair>> {
+  public async entries(): Promise<Iterable<Pair>> {
     return this.master.entries();
   }
   public async get(key: string, defaultValue: string | null = null): Promise<string | null> {
@@ -67,7 +67,7 @@ export class Kevast {
       return defaultValue;
     }
   }
-  public async keys(): Promise<IterableIterator<string>> {
+  public async keys(): Promise<Iterable<string>> {
     return this.master.keys();
   }
   public async set(key: string, value: string): Promise<void> {
@@ -83,7 +83,7 @@ export class Kevast {
   public async size(): Promise<number> {
     return this.master.size();
   }
-  public async values(): Promise<IterableIterator<string>> {
+  public async values(): Promise<Iterable<string>> {
     return this.master.values();
   }
   private composeMiddleware(

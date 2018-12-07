@@ -15,13 +15,13 @@ export class SStorage implements ISyncStorage {
   public delete(key: string): void {
     this.storage.delete(key);
   }
-  public entries(): IterableIterator<Pair> {
+  public entries(): Iterable<Pair> {
     return this.storage.entries();
   }
   public get(key: string): string | null | undefined {
     return this.storage.get(key);
   }
-  public keys(): IterableIterator<string> {
+  public keys(): Iterable<string> {
     return this.storage.keys();
   }
   public set(key: string, value: string): void {
@@ -30,7 +30,7 @@ export class SStorage implements ISyncStorage {
   public size(): number {
     return this.storage.size;
   }
-  public values(): IterableIterator<string> {
+  public values(): Iterable<string> {
     return this.storage.values();
   }
 }

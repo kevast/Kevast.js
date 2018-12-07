@@ -17,13 +17,13 @@ export class AStorage implements IAsyncStorage {
     this.storage.delete(key);
     return Promise.resolve();
   }
-  public entries(): Promise<IterableIterator<Pair>> {
+  public entries(): Promise<Iterable<Pair>> {
     return Promise.resolve(this.storage.entries());
   }
   public get(key: string): Promise<string | null | undefined> {
     return Promise.resolve(this.storage.get(key));
   }
-  public keys(): Promise<IterableIterator<string>> {
+  public keys(): Promise<Iterable<string>> {
     return Promise.resolve(this.storage.keys());
   }
   public set(key: string, value: string): Promise<void> {
@@ -33,7 +33,7 @@ export class AStorage implements IAsyncStorage {
   public size(): Promise<number> {
     return Promise.resolve(this.storage.size);
   }
-  public values(): Promise<IterableIterator<string>> {
+  public values(): Promise<Iterable<string>> {
     return Promise.resolve(this.storage.values());
   }
 }

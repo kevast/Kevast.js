@@ -49,7 +49,7 @@ export class KevastSync {
     this.master.delete(key);
     this.redundancies.forEach((storage) => storage.delete(key));
   }
-  public entries(): IterableIterator<Pair> {
+  public entries(): Iterable<Pair> {
     return this.master.entries();
   }
   public get(key: string, defaultValue: string = null): string {
@@ -67,7 +67,7 @@ export class KevastSync {
       return defaultValue;
     }
   }
-  public keys(): IterableIterator<string> {
+  public keys(): Iterable<string> {
     return this.master.keys();
   }
   public set(key: string, value: string) {
@@ -84,7 +84,7 @@ export class KevastSync {
   public size(): number {
     return this.master.size();
   }
-  public values(): IterableIterator<string> {
+  public values(): Iterable<string> {
     return this.master.values();
   }
   private composeMiddleware(
