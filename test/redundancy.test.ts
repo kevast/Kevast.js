@@ -8,7 +8,7 @@ describe('Test redundancy', () => {
   it('Main sync redundancy sync', () => {
     const map1 = new Map<string, string>();
     const map2 = new Map<string, string>();
-    const kevast = new Kevast.KevastSync(new SStorage(map1), new SStorage(map2));
+    const kevast = new Kevast(new SStorage(map1), new SStorage(map2));
     kevast.set(Math.random().toString(), Math.random().toString());
     assert.deepEqual(map1, map2);
   });
