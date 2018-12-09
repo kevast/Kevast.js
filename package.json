@@ -1,15 +1,18 @@
 {
   "name": "kevast",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Kevast for browser and Node.js. One key-value interface, all kinds of storages.",
   "main": "dist/nodejs/index.js",
   "keywords": [
+    "kevast",
     "key",
     "value",
     "key-value",
+    "interface",
     "storage",
     "redundancy",
-    "middleware"
+    "middleware",
+    "db"
   ],
   "scripts": {
     "clean": "rm -rf ./dist/*",
