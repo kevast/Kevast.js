@@ -1,10 +1,8 @@
-import { KevastSync } from './KevastSync';
-import {IDuplexMiddleware, SimplexMiddleware} from './Middleware';
-import {Pair} from './Pair';
-import {Storage} from './Storage';
+import { IDuplexMiddleware, SimplexMiddleware } from './Middleware';
+import { Pair } from './Pair';
+import { Storage } from './Storage';
 
 export class Kevast {
-  public static KevastSync = KevastSync;
   public onGet = {
     use: (middleware: SimplexMiddleware) => {
       if (!middleware) { return; }

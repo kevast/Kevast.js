@@ -1,3 +1,3 @@
-import {Kevast} from './Kevast';
+import { Kevast } from './Kevast';
 
 export = Kevast;
