@@ -104,7 +104,7 @@ export class Kevast {
           return final();
         }
         const next: () => Promise<void> = dispatch.bind(null, index + 1);
-        const middleware = middlewares[index][direction];
+        const middleware = middlewares[index][direction].bind(middlewares[index]);
         await middleware(pair, next);
         // If next is not called, call it
         if (index === last) {
