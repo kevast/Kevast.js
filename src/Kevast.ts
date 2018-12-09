@@ -8,18 +8,18 @@ export class Kevast {
       if (!middleware) { return; }
       this.use({
         onGet: middleware,
-        onSet: () => {}
+        onSet: () => {},
       });
-    }
+    },
   };
   public onSet = {
     use: (middleware: SimplexMiddleware) => {
       if (!middleware) { return; }
       this.use({
         onGet: () => {},
-        onSet: middleware
+        onSet: middleware,
       });
-    }
+    },
   };
   private master: Storage;
   private redundancies: Storage[];
@@ -87,7 +87,7 @@ export class Kevast {
   private composeMiddleware(
     middlewares: IDuplexMiddleware[],
     direction: 'onGet' | 'onSet',
-    final: () => Promise<void>
+    final: () => Promise<void>,
   ): (pair: Pair) => Promise<void> {
     if (direction === 'onGet') {
       middlewares = [...middlewares].reverse();
