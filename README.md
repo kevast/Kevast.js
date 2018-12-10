@@ -25,7 +25,7 @@ Latest version
 ```
 Specific version
 ```html
-<script src="https://cdn.jsdelivr.net/npm/kevast@0.0.4/dist/browser/kevast.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kevast@0.0.8/dist/browser/kevast.min.js"></script>
 ```
 
 ## Hello Kevast
