@@ -38,10 +38,11 @@ const KevastEncrypt = require('kevast-encrypt');
 
 // Using memory as master storage,
 // and file as redundancy storage
-const kevast = new Kevast(new KevastMemory(), new KevastFile(...));
+const kevast = new Kevast(new KevastMemory(), new KevastFile('./storage.db'));
 
 // Using encryption as a middleware
-kevast.use(new KevastEncrypt(...));
+const key = KevastEncrypt.randomKey();
+kevast.use(new KevastEncrypt(key));
 
 // Save key-value data
 await kevast.set('key', Math.random().toString());
