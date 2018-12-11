@@ -25,7 +25,7 @@ function generateConfig(name) {
     output: {
       filename: `${name}.js`,
       path: path.resolve(__dirname, 'dist', 'browser'),
-      library: 'kevast',
+      library: 'Kevast',
       libraryTarget: 'umd'
     },
     devtool: 'source-map'
