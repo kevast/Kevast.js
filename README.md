@@ -85,23 +85,33 @@ const kevast = new Kevast(new KevastMemory(), new KevastFile('./storage.db'));
 - `entries(): Promise<Iterable<Pair>>`: Returns a Iterable object that contains an array of [key, value] for all pairs.
 
 #### Use a middleware
-TODO: middle description and image
+With kevast's onion-like middleware stack flows, you can perform actions downstream and upstream.
+
+![middleware onget](./docs/assets/middleware_onget.png)
+
+![middleware onset](./docs/assets/middleware_onset.png)
 
 ```javascript
 const kevast = new Kevast(...);
-kevast.onGet.use((pair, next) => {
+kevast.onGet.use(async (pair, next) => {
   // pair[0] => key
   // pair[1] => value
+  console.log('Before Get');
+  await next();
+  console.log('After Get');
 });
 
 kevast.onSet.use((pair, next) => {
   // pair[0] => key
   // pair[1] => value
+  console.log('Before Set');
+  await next();
+  console.log('After Set');
 });
 
 kevast.use({
-  onGet(pair, next) {},
-  onSet(pair, next) {}
+  onGet(pair, next) {/* ... */},
+  onSet(pair, next) {/* ... */}
 });
 ```
 
