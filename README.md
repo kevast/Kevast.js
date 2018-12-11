@@ -117,7 +117,6 @@ kevast.use({
 
 ### Development
 - [Storage](./docs/storage.md)
-- [Redundancy](./docs/redundancy.md)
 - [Middleware](./docs/middleware.md)
 
 ## Compatibility
