@@ -1,8 +1,8 @@
 # kevast.js
 ![logo](./docs/assets/logo.png)
 
-Kevast is a dependency-free key-value storage interface, allowing you to access key-value based data wherever you want, memory, file, gist, etc.
-With kevast's onion-like middleware stack flows, you can perform actions downstream and upstream.
+Kevast is a dependency-free **key-value storage interface**, allowing you to **access key-value based data wherever you want**, memory, file, gist, redis, google drive, etc.
+With kevast's **onion-like middleware** stack flows, you can perform actions downstream and upstream.
 
 Kevast.js is Javascript version of kevast for both Node.js and browser.
 
@@ -25,22 +25,26 @@ Latest version
 ```
 Specific version
 ```html
-<script src="https://cdn.jsdelivr.net/npm/kevast@0.0.8/dist/browser/kevast.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kevast@0.1.0/dist/browser/kevast.min.js"></script>
 ```
 
 ## Hello Kevast
 ```javascript
-const Kevast = require('kevast');
+const { Kevast } = require('kevast');
 // Install these package with yarn or npm
-const KevastMemory = require('kevast-memory');
-const KevastFile = require('kevast-file');
-const KevastEncrypt = require('kevast-encrypt');
+const { KevastFile } = require('kevast-file');
+const { KevastGist } = require('kevast-gist');
+const { KevastEncrypt } = require('kevast-encrypt');
 
-// Using memory as master storage,
-// and file as redundancy storage
-const kevast = new Kevast(new KevastMemory(), new KevastFile('./storage.db'));
+const storages = [
+  new KevastFile('./storage.json'),
+  new KevastGist('YOUR GITHUB ACCESS TOKEN');
+]
+// Kevast will keep data in memory
+// and back up them in all redundancy storage
+const kevast = new Kevast(...storages);
 
-// Using encryption as a middleware
+// Use encryption as a middleware
 const key = KevastEncrypt.randomKey();
 kevast.use(new KevastEncrypt(key));
 
@@ -48,8 +52,8 @@ kevast.use(new KevastEncrypt(key));
 await kevast.set('key', Math.random().toString());
 
 // According to configuration,
-// data will be saved in both memory and file
-// after encryption
+// data will be saved in both memory, file and gist
+// Of course, after encryption
 
 // Read data from memory
 // and decrypt
@@ -60,29 +64,41 @@ console.log(value);
 ## Documentation
 ### Usage
 #### Create an instance
-When creating a kevast instance, you need to provide a master storage and optionally multiple redundancy storages.
-Master storage will be the main storage and the data will be also backed up in redundancy storages.
+When you construct a Kevast instance without any arguments, kevast is just like a **JavaScript Map**, except that kevast only accepts the key and value of the string.
 
 ```javascript
-const Kevast = require('kevast');
-const KevastMemory = require('kevast-memory');
-const KevastFile = require('kevast-file');
+const { Kevast } = require('kevast');
+const kevast = new Kevast();
+kevast.set('1', '2');
+kevast.get('1');
+```
 
-//                           Master Storage         Redundancy Storages
-//                                 ↓                          ↓
-const kevast = new Kevast(new KevastMemory(), new KevastFile('./storage.db'));
+You can also provide additional Storage parameters when creating instances, which will be used as a backup for kevast. Read operations are done in memory and writes are done in all storages.
+
+```javascript
+const { Kevast } = require('kevast');
+const { KevastFile } = require('kevast-file');
+const { KevastGist } = require('kevast-gist');
+
+const storages = [
+  new KevastFile('./storage.json'),
+  new KevastGist('YOUR GITHUB ACCESS TOKEN');
+]
+//                     Redundancy Storage
+//                             ↓
+const kevast = new Kevast(...storages);
 ```
 
 #### Basic function
 - `set(key: string, value: string): Promise<void>`: Sets the value for the key.
-- `get(key: string, defaultValue: string | null = null): Promise<string>`: Returns the value associated to the key, or `defaultValue` if there is none.
+- `get(key: string, defaultValue: string = null): string`: Returns the value associated to the key, or `defaultValue` if there is none.
 - `delete(key: string): Promise<void>`: Remove a key-value pair
 - `clear(): Promise<void>`: Removes all key-value pairs
-- `has(key: string): Promise<boolean>`: Returns a boolean asserting whether key-value pair exists or not.
-- `size(): Promise<number>`: Returns the number of key-value pairs.
-- `keys(): Promise<Iterable<string>>`: Returns a new Iterable object that contains all keys.
-- `values(): Promise<Iterable<string>>`: Returns a new Iterable object that contains all values.
-- `entries(): Promise<Iterable<Pair>>`: Returns a Iterable object that contains an array of [key, value] for all pairs.
+- `has(key: string): boolean`: Returns a boolean asserting whether key-value pair exists or not.
+- `size(): number`: Returns the number of key-value pairs.
+- `keys(): Iterable<string>`: Returns a new Iterable object that contains all keys.
+- `values(): Iterable<string>`: Returns a new Iterable object that contains all values.
+- `entries(): Iterable<Pair>`: Returns a Iterable object that contains an array of [key, value] for all pairs.
 
 #### Use a middleware
 With kevast's onion-like middleware stack flows, you can perform actions downstream and upstream.
@@ -92,16 +108,16 @@ With kevast's onion-like middleware stack flows, you can perform actions downstr
 ![middleware onset](./docs/assets/middleware_onset.png)
 
 ```javascript
-const kevast = new Kevast(...);
-kevast.onGet.use(async (pair, next) => {
+const kevast = new Kevast();
+kevast.onGet.use((pair, next) => {
   // pair[0] => key
   // pair[1] => value
   console.log('Before Get');
-  await next();
+  next();
   console.log('After Get');
 });
 
-kevast.onSet.use((pair, next) => {
+kevast.onSet.use(async (pair, next) => {
   // pair[0] => key
   // pair[1] => value
   console.log('Before Set');
@@ -111,7 +127,7 @@ kevast.onSet.use((pair, next) => {
 
 kevast.use({
   onGet(pair, next) {/* ... */},
-  onSet(pair, next) {/* ... */}
+  async onSet(pair, next) {/* ... */}
 });
 ```
 
