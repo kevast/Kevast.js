@@ -1,5 +1,5 @@
 import assert = require('assert');
-import Kevast = require('../src/index');
+import { Kevast } from '../src/index';
 import {AStorage} from './util/AStorage';
 import {SStorage} from './util/SStorage';
 type Storage = AStorage | SStorage;

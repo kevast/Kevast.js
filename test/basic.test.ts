@@ -1,7 +1,7 @@
 import assert = require('assert');
-import Kevast = require('../src/index');
-import {AStorage} from './util/AStorage';
-import {SStorage} from './util/SStorage';
+import { Kevast } from '../src/index';
+import { AStorage } from './util/AStorage';
+import { SStorage } from './util/SStorage';
 
 describe('Test basic function with sync storage', () => {
   this.kevast = new Kevast(new SStorage());
