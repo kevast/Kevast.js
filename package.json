@@ -8,9 +8,8 @@
     "key",
     "value",
     "key-value",
-    "interface",
     "storage",
-    "redundancy",
+    "interface",
     "middleware"
   ],
   "scripts": {
