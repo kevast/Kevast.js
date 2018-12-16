@@ -17,7 +17,7 @@ export class AStorage implements IStorage {
       this.storage.delete(pair[0]);
     }
   }
-  public async init() {
+  public async current() {
     return this.storage;
   }
 }

@@ -7,7 +7,7 @@ export class Kevast {
   public static async create(...storages: IStorage[]): Promise<Kevast> {
     let inits: Array<Map<string, string>> = [];
     if (storages.length > 0) {
-      inits = await Promise.all(storages.map((storage) => storage.init()));
+      inits = await Promise.all(storages.map((storage) => storage.current()));
       if (storages.length > 1) {
         for (let i = 1; i < inits.length; i++) {
           assert.deepStrictEqual(inits[i - 1], inits[i], 'Fail to create instance: inconsistent storage content');

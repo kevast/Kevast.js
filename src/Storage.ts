@@ -9,5 +9,5 @@ export interface IMutationEvent {
 
 export interface IStorage {
   mutate: (event: IMutationEvent) => Promise<void> | void;
-  init: () => Promise<Map<string, string>> | Map<string, string>;
+  current: () => Promise<Map<string, string>> | Map<string, string>;
 }
