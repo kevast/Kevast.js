@@ -8,7 +8,7 @@ describe('Test middleware', () => {
     const kevast = new Kevast(new AStorage());
     await kevast.set('key0', 'value');
     kevast.onGet.use(onGet.bind(null, tracer, '0'));
-    const value = await kevast.get('key');
+    const value = kevast.get('key');
     assert.deepEqual(tracer, ['beforeGet:0', 'afterGet:0']);
     assert(value === 'value0');
   });
@@ -19,7 +19,7 @@ describe('Test middleware', () => {
     kevast.onGet.use(onGet.bind(null, tracer, '1'));
     kevast.onGet.use(onGet.bind(null, tracer, '2'));
     kevast.onGet.use(onGet.bind(null, tracer, '3'));
-    const value = await kevast.get('key');
+    const value = kevast.get('key');
     assert.deepEqual(tracer, ['beforeGet:3', 'beforeGet:2', 'beforeGet:1', 'afterGet:1', 'afterGet:2', 'afterGet:3']);
     assert(value === 'value123');
   });
@@ -30,7 +30,7 @@ describe('Test middleware', () => {
     kevast.onSet.use(onSet.bind(null, tracer, '0'));
     await kevast.set('key', 'value');
     assert([...map.keys()][0] === 'key0');
-    const value = await kevast.get('key0');
+    const value = kevast.get('key0');
     assert(value === 'value0');
     assert.deepEqual(tracer, ['beforeSet:0', 'afterSet:0']);
   });
@@ -43,7 +43,7 @@ describe('Test middleware', () => {
     kevast.onSet.use(onSet.bind(null, tracer, '3'));
     await kevast.set('key', 'value');
     assert([...map.keys()][0] === 'key123');
-    const value = await kevast.get('key123');
+    const value = kevast.get('key123');
     assert(value === 'value123');
     assert.deepEqual(tracer, ['beforeSet:1', 'beforeSet:2', 'beforeSet:3', 'afterSet:3', 'afterSet:2', 'afterSet:1']);
   });
@@ -55,7 +55,7 @@ describe('Test middleware', () => {
     await kevast.set('key', 'value');
     assert([...map.keys()][0] === 'key');
     assert([...map.values()][0] === 'value0');
-    const value = await kevast.get('key');
+    const value = kevast.get('key');
     assert(value === 'value');
     assert.deepEqual(tracer, ['beforeSet:0', 'afterSet:0', 'beforeGet:0', 'afterGet:0']);
   });
@@ -69,7 +69,7 @@ describe('Test middleware', () => {
     await kevast.set('key', 'value');
     assert([...map.keys()][0] === 'key');
     assert([...map.values()][0] === 'value123');
-    const value = await kevast.get('key');
+    const value = kevast.get('key');
     assert(value === 'value');
     assert.deepEqual(tracer, [
       'beforeSet:1', 'beforeSet:2', 'beforeSet:3', 'afterSet:3', 'afterSet:2', 'afterSet:1',
@@ -83,7 +83,7 @@ describe('Test middleware', () => {
     kevast.onSet.use(async () => {});
     kevast.onSet.use(async () => {});
     await kevast.set('key', 'value');
-    const value = await kevast.get('key');
+    const value = kevast.get('key');
     assert(value === 'value');
   });
   it('Call next multiple times', async () => {
@@ -93,7 +93,7 @@ describe('Test middleware', () => {
       next();
     });
     try {
-      await kevast.get('key');
+      kevast.get('key');
       assert.fail('Missing expected exception.');
     } catch (err) {
       assert(err.message === 'next() called multiple times');
