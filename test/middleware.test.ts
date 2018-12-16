@@ -5,7 +5,7 @@ import { AStorage } from './util/AStorage';
 describe('Test middleware', () => {
   it('Single onGet middleware', async () => {
     const tracer: string[] = [];
-    const kevast = new Kevast(new AStorage());
+    const kevast = await Kevast.create(new AStorage());
     await kevast.set('key0', 'value');
     kevast.onGet.use(onGet.bind(null, tracer, '0'));
     const value = kevast.get('key');
@@ -14,7 +14,7 @@ describe('Test middleware', () => {
   });
   it('Multiple onGet middlewares', async () => {
     const tracer: string[] = [];
-    const kevast = new Kevast(new AStorage());
+    const kevast = await Kevast.create(new AStorage());
     await kevast.set('key321', 'value');
     kevast.onGet.use(onGet.bind(null, tracer, '1'));
     kevast.onGet.use(onGet.bind(null, tracer, '2'));
@@ -26,7 +26,7 @@ describe('Test middleware', () => {
   it('Single onSet middleware', async () => {
     const tracer: string[] = [];
     const map = new Map<string, string>();
-    const kevast = new Kevast(new AStorage(map));
+    const kevast = await Kevast.create(new AStorage(map));
     kevast.onSet.use(onSet.bind(null, tracer, '0'));
     await kevast.set('key', 'value');
     assert([...map.keys()][0] === 'key0');
@@ -37,7 +37,7 @@ describe('Test middleware', () => {
   it('Multiple onSet middlewares', async () => {
     const tracer: string[] = [];
     const map = new Map<string, string>();
-    const kevast = new Kevast(new AStorage(map));
+    const kevast = await Kevast.create(new AStorage(map));
     kevast.onSet.use(onSet.bind(null, tracer, '1'));
     kevast.onSet.use(onSet.bind(null, tracer, '2'));
     kevast.onSet.use(onSet.bind(null, tracer, '3'));
@@ -50,7 +50,7 @@ describe('Test middleware', () => {
   it('Single Duplex middleware', async () => {
     const tracer: string[] = [];
     const map = new Map<string, string>();
-    const kevast = new Kevast(new AStorage(map));
+    const kevast = await Kevast.create(new AStorage(map));
     kevast.use(asyncDuplex(tracer, '0'));
     await kevast.set('key', 'value');
     assert([...map.keys()][0] === 'key');
@@ -62,7 +62,7 @@ describe('Test middleware', () => {
   it('Multiple Duplex middlewares', async () => {
     const tracer: string[] = [];
     const map = new Map<string, string>();
-    const kevast = new Kevast(new AStorage(map));
+    const kevast = await Kevast.create(new AStorage(map));
     kevast.use(asyncDuplex(tracer, '1'));
     kevast.use(asyncDuplex(tracer, '2'));
     kevast.use(asyncDuplex(tracer, '3'));
@@ -77,7 +77,7 @@ describe('Test middleware', () => {
     ]);
   });
   it('Never call next', async () => {
-    const kevast = new Kevast(new AStorage());
+    const kevast = await Kevast.create(new AStorage());
     kevast.onGet.use(() => {});
     kevast.onGet.use(() => {});
     kevast.onSet.use(async () => {});
@@ -87,7 +87,7 @@ describe('Test middleware', () => {
     assert(value === 'value');
   });
   it('Call next multiple times', async () => {
-    let kevast = new Kevast(new AStorage());
+    let kevast = await Kevast.create(new AStorage());
     kevast.onGet.use((_: [string, string], next: () => void) => {
       next();
       next();
@@ -98,7 +98,7 @@ describe('Test middleware', () => {
     } catch (err) {
       assert(err.message === 'next() called multiple times');
     }
-    kevast = new Kevast(new AStorage());
+    kevast = await Kevast.create(new AStorage());
     kevast.onSet.use(async (_: [string, string], next: () => Promise<void>) => {
       await next();
       await next();

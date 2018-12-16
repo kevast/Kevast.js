@@ -1,8 +1,27 @@
+import * as assert from 'assert';
 import { GetMiddleware, IMiddleware, SetMiddleware } from './Middleware';
 import { Pair } from './Pair';
 import { IMutationEvent, IStorage } from './Storage';
 
 export class Kevast {
+  public static async create(...storages: IStorage[]): Promise<Kevast> {
+    let inits: Array<Map<string, string>> = [];
+    if (storages.length > 0) {
+      inits = await Promise.all(storages.map((storage) => storage.init()));
+      if (storages.length > 1) {
+        for (let i = 1; i < inits.length; i++) {
+          assert.deepStrictEqual(inits[i - 1], inits[i], 'Fail to create instance: inconsistent storage content');
+        }
+      }
+    }
+    const instance = new Kevast();
+    instance.master = new Map<string, string>(inits[0]);
+    instance.storages = storages;
+    instance.middlewares = [];
+    instance.composedGet = instance.composeGetMiddlewares();
+    instance.composedSet = instance.composeSetMiddlewares();
+    return instance;
+  }
   public onGet = {
     use: (middleware: GetMiddleware) => {
       if (!middleware) { return; }
@@ -21,18 +40,12 @@ export class Kevast {
       });
     },
   };
-  private master: any;
+  private master: Map<string, string>;
   private storages: IStorage[];
   private middlewares: IMiddleware[];
   private composedGet: (pair: Pair) => void;
   private composedSet: (pair: Pair) => Promise<void>;
-  constructor(...storages: IStorage[]) {
-    this.master = {};
-    this.storages = storages;
-    this.middlewares = [];
-    this.composedGet = this.composeGetMiddlewares();
-    this.composedSet = this.composeSetMiddlewares();
-  }
+  private constructor() {}
   public use(middleware: IMiddleware): Kevast {
     if (!middleware) { return this; }
     this.middlewares.push(middleware);
@@ -41,8 +54,8 @@ export class Kevast {
     return this;
   }
   public async clear() {
-    const removed: Pair[] = Object.entries(this.master);
-    this.master = {};
+    const removed: Pair[] = [...this.master.entries()];
+    this.master.clear();
     if (this.storages.length === 0) { return; }
     const event: IMutationEvent = {
       added: [],
@@ -54,13 +67,13 @@ export class Kevast {
   }
   public has(key: string): boolean {
     if (typeof key !== 'string') { return false; }
-    return key in this.master;
+    return this.master.has(key);
   }
   public async delete(key: string) {
     if (typeof key !== 'string') { return; }
-    if (!(key in this.master)) { return; }
-    const removed: Pair[] = [[key, this.master[key]]];
-    delete this.master[key];
+    if (!this.master.has(key)) { return; }
+    const removed: Pair[] = [[key, this.master.get(key)]];
+    this.master.delete(key);
     if (this.storages.length === 0) { return; }
     const event: IMutationEvent = {
       added: [],
@@ -71,7 +84,7 @@ export class Kevast {
     await Promise.all(this.storages.map((storage) => storage.mutate(event)));
   }
   public entries(): Iterable<Pair> {
-    return Object.entries(this.master);
+    return this.master.entries();
   }
   public get(key: string, defaultValue: string = null): string {
     if (typeof key !== 'string') {
@@ -90,7 +103,7 @@ export class Kevast {
     }
   }
   public keys(): Iterable<string> {
-    return Object.keys(this.master);
+    return this.master.keys();
   }
   public async set(key: string, value: string) {
     if (typeof key !== 'string' || typeof value !== 'string') {
@@ -100,16 +113,16 @@ export class Kevast {
     await this.composedSet(pair);
   }
   public size(): number {
-    return Object.keys(this.master).length;
+    return this.master.size;
   }
   public values(): Iterable<string> {
-    return Object.values(this.master);
+    return this.master.values();
   }
   private _get(pair: Pair) {
-    pair[1] = this.master[pair[0]];
+    pair[1] = this.master.get(pair[0]);
   }
   private async _set(pair: Pair) {
-    this.master[pair[0]] = pair[1];
+    this.master.set(pair[0], pair[1]);
     if (this.storages.length === 0) { return; }
     const event: IMutationEvent = {
       added: [pair],

@@ -17,4 +17,7 @@ export class SStorage implements IStorage {
       this.storage.delete(pair[0]);
     }
   }
+  public init() {
+    return this.storage;
+  }
 }
