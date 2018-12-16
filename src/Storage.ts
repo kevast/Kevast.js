@@ -3,7 +3,7 @@ import { Pair } from './Pair';
 export interface IMutationEvent {
   added: Pair[];
   changed: Pair[];
-  current: any;
+  current: Map<string, string>;
   removed: Pair[];
 }
 
