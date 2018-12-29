@@ -60,7 +60,7 @@ export class Kevast {
     const event: IMutationEvent = {
       added: [],
       changed: [],
-      current: Object.assign({}, this.master),
+      current: new Map(this.master),
       removed,
     };
     await Promise.all(this.storages.map((storage) => storage.mutate(event)));
@@ -78,7 +78,7 @@ export class Kevast {
     const event: IMutationEvent = {
       added: [],
       changed: [],
-      current: Object.assign({}, this.master),
+      current: new Map(this.master),
       removed,
     };
     await Promise.all(this.storages.map((storage) => storage.mutate(event)));
@@ -127,7 +127,7 @@ export class Kevast {
     const event: IMutationEvent = {
       added: [pair],
       changed: [],
-      current: Object.assign({}, this.master),
+      current: new Map(this.master),
       removed: [],
     };
     await Promise.all(this.storages.map((storage) => storage.mutate(event)));
