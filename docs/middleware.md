@@ -15,7 +15,7 @@ With kevast's onion-like middleware stack flows, you can perform actions downstr
 ### Example
 ```javascript
 const tracer = [];
-const kevast = new Kevast();
+const kevast = await Kevast.create();
 kevast.onSet.use(async (pair, next) => {
   tracer.push('beforeSet:1');
   pair[1] += '1';

@@ -25,7 +25,7 @@ Latest version
 ```
 Specific version
 ```html
-<script src="https://cdn.jsdelivr.net/npm/kevast@0.1.6/dist/browser/kevast.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kevast@0.1.7/dist/browser/kevast.min.js"></script>
 ```
 
 ## Hello Kevast
@@ -36,31 +36,29 @@ const { KevastFile } = require('kevast-file');
 const { KevastGist } = require('kevast-gist');
 const { KevastEncrypt } = require('kevast-encrypt');
 
-(async () => {
-  const storages = [
-    new KevastFile('./storage.json'),
-    new KevastGist('YOUR GITHUB ACCESS TOKEN');
-  ]
-  // Kevast will keep data in memory
-  // and back up them in all redundancy storage
-  const kevast = await Kevast.create(...storages);
-  
-  // Use encryption as a middleware
-  const key = KevastEncrypt.randomKey();
-  kevast.use(new KevastEncrypt(key));
-  
-  // Save key-value data
-  await kevast.set('key', Math.random().toString());
-  
-  // According to configuration,
-  // data will be saved in both memory, file and gist
-  // Of course, after encryption
-  
-  // Read data from memory
-  // and decrypt
-  const value = kevast.get('key');
-  console.log(value);
-})();
+const storages = [
+  new KevastFile('./storage.json'),
+  new KevastGist('YOUR GITHUB ACCESS TOKEN');
+]
+// Kevast will keep data in memory
+// and back up them in all redundancy storage
+const kevast = await Kevast.create(...storages);
+
+// Use encryption as a middleware
+const key = KevastEncrypt.randomKey();
+kevast.use(new KevastEncrypt(key));
+
+// Save key-value data
+await kevast.set('key', Math.random().toString());
+
+// According to configuration,
+// data will be saved in both memory, file and gist
+// Of course, after encryption
+
+// Read data from memory
+// and decrypt
+const value = kevast.get('key');
+console.log(value);
 ```
 
 ## Documentation
@@ -70,7 +68,7 @@ When you construct a Kevast instance without any arguments, kevast is just like 
 
 ```javascript
 const { Kevast } = require('kevast');
-const kevast = new Kevast();
+const kevast = await Kevast.create();
 kevast.set('1', '2');
 kevast.get('1');
 // -> 2
@@ -109,7 +107,7 @@ const { KevastGist } = require('kevast-gist');
 With kevast's onion-like middleware stack flows, you can perform actions downstream and upstream.
 
 ```javascript
-const kevast = new Kevast();
+const kevast = await Kevast.create(...storages);
 kevast.onGet.use((pair, next) => {
   // pair[0] => key
   // pair[1] => value
