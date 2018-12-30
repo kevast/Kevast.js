@@ -15,27 +15,27 @@ With kevast's onion-like middleware stack flows, you can perform actions downstr
 ### Example
 ```javascript
 const tracer = [];
-const kevast = new Kevast(new KevastMemory());
-kevast.onSet.use((pair, next) => {
+const kevast = new Kevast();
+kevast.onSet.use(async (pair, next) => {
   tracer.push('beforeSet:1');
   pair[1] += '1';
   await next();
   tracer.push('afterSet:1');
 });
-kevast.onSet.use((pair, next) => {
+kevast.onSet.use(async (pair, next) => {
   tracer.push('beforeSet:2');
   pair[1] += '2';
   await next();
   tracer.push('afterSet:2');
 });
-kevast.onSet.use((pair, next) => {
+kevast.onSet.use(async (pair, next) => {
   tracer.push('beforeSet:3');
   pair[1] += '3';
   await next();
   tracer.push('afterSet:3');
 });
 await kevast.set('key', 'value');
-const value = await kevast.get('key');
+const value = kevast.get('key');
 assert(value === 'value123');
 assert.deepEqual(
   tracer,
@@ -59,12 +59,12 @@ For practical detail, you can refer to [kevast-encrypt](https://github.com/kevas
 For short:
 ```typescript
 // Simplex onGet middleware
-async function onGetMiddleware(pair: [string, string], next: () => Promise<void>) {/* code */}
+function onGetMiddleware(pair: [string, string], next: () => void) {/* code */}
 // Simplex onSet middleware
 async function onSetMiddleware(pair: [string, string], next: () => Promise<void>) {/* code */}
 // Duplex middleware
 const duplexMiddleware = {
-  onGet: async (pair: [string, string], next: () => Promise<void>) => {/* code */},
+  onGet: (pair: [string, string], next: () => void) => {/* code */},
   onSet: async (pair: [string, string], next: () => Promise<void>) => {/* code */},
 }
 ```
@@ -72,12 +72,12 @@ const duplexMiddleware = {
 ### JavaScript
 ```javascript
 // Simplex onGet middleware
-async function onGetMiddleware(pair, next) {/* code */}
+function onGetMiddleware(pair, next) {/* code */}
 // Simplex onSet middleware
 async function onSetMiddleware(pair, next) {/* code */}
 // Duplex middleware
 const duplexMiddleware = {
-  onGet: async (pair, next) => {/* code */},
+  onGet: (pair, next) => {/* code */},
   onSet: async (pair, next) => {/* code */},
 }
 ```

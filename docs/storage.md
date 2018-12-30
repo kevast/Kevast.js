@@ -5,60 +5,60 @@ Storage is where kevast save data. You can use any imaginable storage media, [me
 
 If kevast does not yet support the storage media you want, you can quickly create one according to the [guide](#how-to-create-a-storage). Thank you for your contribution to the kevast community.
 
-## Synchronous & Asynchronous
-Kevast has two kinds of storage, synchronous storage and asynchronous storage. It is easy to know from the name that the main difference between the two is whether the internal implementation is synchronous or asynchronous. Other than that, they are exactly the same.
-
-For example, [kevast-memory](https://github.com/kevast/kevast-memory.js) is a synchronous storage and [kevast-file](https://github.com/kevast/kevast-file.js) is an asynchronous storage.
-
-## Master & Redundancy
-When creating a kevast instance, you need to provide a master storage and optionally multiple redundancy storages.
-
-When performing some idempotent operations (like `get`, `size`, `keys`), kevast only uses the master storage. Other operations like `set`, `delete`, `clear` will be performed at all storages including master and redundancies.
-
 ## How to Create a Storage
 It is strongly recommended to use TypeScript in kevast project.
 
 ### TypeScript
-For practical detail, you can refer to [kevast-memory](https://github.com/kevast/kevast-memory.js) and [kevast-file](https://github.com/kevast/kevast-file.js) to learn how to develop, test and publish a new storage.
+For practical detail, you can refer to [kevast-memory](https://github.com/kevast/kevast-memory.js), [kevast-file](https://github.com/kevast/kevast-file.js) and [kevast-gist](https://github.com/kevast/kevast-gist.js) to learn how to develop, test and publish a new storage.
 
 For short:
 ```typescript
-import { IAsyncStorage, ISyncStorage } from 'kevast/dist/nodejs/Storage';
-class MySyncStorage implements ISyncStorage {
-  public clear() {/* Code */}
-  public has(key: string): boolean {/* Code */}
-  public delete(key: string) {/* Code */}
-  public entries(): IterableIterator<Pair> {/* Code */}
-  public get(key: string): string {/* Code */}
-  public keys(): IterableIterator<string> {/* Code */}
-  public set(key: string, value: string) {/* Code */}
-  public size(): number {/* Code */}
-  public values(): IterableIterator<string> {/* Code */}
+import { IMutationEvent, IStorage } from 'kevast/dist/Storage';
+class MyStorage implements IStorage {
+  public async current(): Promise<Map<string, string>> {
+    // return current contain like 
+    return new Map<string, string>([
+      ['key1', 'value1'],
+      ['key2', 'value2'],
+    ]);
+    // if empty
+    return new Map<string, string>();
+  }
+  public async mutate(event: IMutationEvent) {
+    // updates your storage according to mutation event
+    // pairs added to storage
+    event.added;
+    // pairs changed
+    event.changed;
+    // pairs removed from storage
+    event.removed;
+    // current contain map
+    event.current;
+  }
 }
-class MyAsyncStorage implements IAsyncStorage {
-  public async clear() {/* Code */}
-  public async has(key: string): Promise<boolean> {/* Code */}
-  public async delete(key: string) {/* Code */}
-  public async entries(): Promise<Iterable<Pair>> {/* Code */}
-  public async get(key: string): Promise<string> {/* Code */}
-  public async keys(): Promise<Iterable<string>> {/* Code */}
-  public async set(key: string, value: string) {/* Code */}
-  public async size(): Promise<number> {/* Code */}
-  public async values(): Promise<Iterable<string>> {/* Code */}
-  private async writeFile(): Promise<void> {/* Code */}
-};
 ```
 ### JavaScript
 ```javascript
 class MyStorage {
-  clear() {/* Code */}
-  has(key) {/* Code */}
-  delete(key) {/* Code */}
-  entries() {/* Code */}
-  get(key) {/* Code */}
-  keys() {/* Code */}
-  set(key, value) {/* Code */}
-  size() {/* Code */}
-  values() {/* Code */}
+  async current() {
+    // return current contain like 
+    return new Map([
+      ['key1', 'value1'],
+      ['key2', 'value2'],
+    ]);
+    // if empty
+    return new Map();
+  }
+  async mutate(event) {
+    // updates your storage according to mutation event
+    // pairs added to storage
+    event.added;
+    // pairs changed
+    event.changed;
+    // pairs removed from storage
+    event.removed;
+    // current contain map
+    event.current;
+  }
 }
 ```
