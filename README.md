@@ -92,6 +92,8 @@ const { KevastGist } = require('kevast-gist');
 })();
 ```
 
+Note that if multiple storages is given, kevast will initialize data from the first one.
+
 #### Basic function
 - `set(key: string, value: string): Promise<void>`: Sets the value for the key.
 - `get(key: string, defaultValue: string = null): string`: Returns the value associated to the key, or `defaultValue` if there is none.
