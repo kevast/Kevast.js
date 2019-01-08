@@ -9,15 +9,10 @@ function generateConfig(name) {
       rules: [
         {
           test: /\.ts?$/,
-          loader: 'babel-loader',
+          loader: ['babel-loader', 'ts-loader'],
           exclude: /node_modules/
         },
-        {
-          test: /\.ts?$/,
-          use: 'ts-loader',
-          exclude: /node_modules/
-        }
-      ]
+      ],
     },
     resolve: {
       extensions: [ '.ts', '.js' ]
@@ -28,7 +23,7 @@ function generateConfig(name) {
       library: 'Kevast',
       libraryTarget: 'umd'
     },
-    devtool: 'source-map'
+    devtool: 'source-map',
   }
 }
 
