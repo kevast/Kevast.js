@@ -15,15 +15,15 @@
   "scripts": {
     "clean": "rm -rf ./dist/*",
     "lint": "tslint -p tsconfig.json",
-    "test": "npm run test:nodejs && npm run test:browser",
-    "build": "npm run build:nodejs && npm run build:browser",
-    "prebuild": "npm run clean",
+    "test": "yarn test:nodejs && yarn test:browser",
+    "build": "yarn build:nodejs && yarn build:browser",
+    "prebuild": "yarn clean",
     "build:nodejs": "tsc",
     "build:browser": "webpack",
     "pretest:browser": "node ./test/browser/build.js",
     "test:nodejs": "mocha --require espower-typescript/guess \"test/**/*.ts\"",
     "test:browser": "open ./test/browser/test.html",
-    "prepublishOnly": "npm run test && npm run build"
+    "prepublishOnly": "yarn test && yarn build"
   },
   "files": [
     "dist/**/*"
@@ -43,14 +43,14 @@
     "@babel/preset-typescript": "^7.1.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.18",
-    "babel-loader": "^8.0.4",
+    "babel-loader": "^8.0.5",
     "espower-typescript": "^9.0.1",
     "mocha": "^5.2.0",
     "power-assert": "^1.6.1",
-    "ts-loader": "^5.3.2",
+    "ts-loader": "^5.3.3",
     "tslint": "^5.12.0",
-    "typescript": "^3.2.1",
-    "webpack": "^4.28.2",
-    "webpack-cli": "^3.1.2"
+    "typescript": "^3.2.2",
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.2.1"
   }
 }
