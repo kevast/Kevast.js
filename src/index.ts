@@ -1,21 +1,15 @@
-import * as assert from 'assert';
 import { GetMiddleware, IMiddleware, SetMiddleware } from './Middleware';
 import { Pair } from './Pair';
 import { IMutationEvent, IStorage } from './Storage';
 
 export class Kevast {
   public static async create(...storages: IStorage[]): Promise<Kevast> {
-    let inits: Array<Map<string, string>> = [];
+    let init: Map<string, string> = null;
     if (storages.length > 0) {
-      inits = await Promise.all(storages.map((storage) => storage.current()));
-      if (storages.length > 1) {
-        for (let i = 1; i < inits.length; i++) {
-          assert.deepStrictEqual(inits[i - 1], inits[i], 'Fail to create instance: inconsistent storage content');
-        }
-      }
+      init = await storages[0].current();
     }
     const instance = new Kevast();
-    instance.master = new Map<string, string>(inits[0]);
+    instance.master = new Map<string, string>(init);
     instance.storages = storages;
     instance.middlewares = [];
     instance.composedGet = instance.composeGetMiddlewares();

@@ -8,6 +8,9 @@ describe('Instantiation test', () => {
   it('Instantiation without parameters', async () => {
     kevast = await Kevast.create();
     assert(kevast.size() === 0);
+    const map = new Map([['key', 'value']]);
+    await kevast.set('key', 'value');
+    assert.deepStrictEqual(kevast.entries(), map.entries());
   });
   it('Instantiation with single storage', async () => {
     kevast = await Kevast.create(new AStorage());
@@ -39,20 +42,11 @@ describe('Instantiation test', () => {
   });
   it('Instantiation with multiple inconsistent storages', async () => {
     const createMap = () => new Map([[Math.random().toString(), Math.random().toString()]]);
-    try {
-      await Kevast.create(new SStorage(createMap()), new SStorage(createMap()));
-    } catch (err) {
-      assert(err.message === 'Fail to create instance: inconsistent storage content');
-    }
-    try {
-      await await Kevast.create(new AStorage(createMap()), new AStorage(createMap()));
-    } catch (err) {
-      assert(err.message === 'Fail to create instance: inconsistent storage content');
-    }
-    try {
-      await Kevast.create(new SStorage(createMap()), new AStorage(createMap()));
-    } catch (err) {
-      assert(err.message === 'Fail to create instance: inconsistent storage content');
-    }
+    kevast = await Kevast.create(new SStorage(createMap()), new SStorage(createMap()));
+    assert(kevast.size() === 1);
+    kevast = await Kevast.create(new AStorage(createMap()), new AStorage(createMap()));
+    assert(kevast.size() === 1);
+    kevast = await Kevast.create(new SStorage(createMap()), new AStorage(createMap()));
+    assert(kevast.size() === 1);
   });
 });
