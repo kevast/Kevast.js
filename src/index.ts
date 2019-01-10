@@ -5,7 +5,6 @@ import { MutationEvent, Storage } from './Storage';
 export class Kevast {
   public onGet = {
     use: (middleware: SimplexMiddleware) => {
-      if (!middleware) { return; }
       this.use({
         onGet: middleware,
         onSet: () => {},
@@ -14,7 +13,6 @@ export class Kevast {
   };
   public onSet = {
     use: (middleware: SimplexMiddleware) => {
-      if (!middleware) { return; }
       this.use({
         onGet: () => {},
         onSet: middleware,
@@ -30,7 +28,6 @@ export class Kevast {
     this.middlewares = [];
   }
   public use(middleware: DuplexMiddleware): Kevast {
-    if (!middleware) { return this; }
     this.middlewares.push(middleware);
     return this;
   }

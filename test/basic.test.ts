@@ -30,14 +30,36 @@ describe('Test instantiation', () => {
 
 function basicFunction() {
   it('Get', async () => {
+    try {
+      await kevast.get(1 as any as string);
+    } catch (err) {
+      assert(err.message === 'Key should be a string');
+    }
+    try {
+      await kevast.get('key', 1 as any as string);
+    } catch (err) {
+      assert(err.message === 'Default value should be a string');
+    }
     assert(await kevast.get('key') === undefined);
     assert(await kevast.get('key', 'default') === 'default');
   });
   it('Set', async () => {
+    try {
+      await kevast.set(1 as any as string, 'value');
+    } catch (err) {
+      assert(err.message === 'Key or value must be string');
+    }
+    try {
+      await kevast.set('key', 1 as any as string);
+    } catch (err) {
+      assert(err.message === 'Key or value must be string');
+    }
     await kevast.set('key', 'value');
     assert(await kevast.get('key') === 'value');
   });
   it('Remove', async () => {
+    // nothing should happen
+    await kevast.remove(1 as any as string);
     await kevast.remove('key');
     assert(await kevast.get('key') === undefined);
   });

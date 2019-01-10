@@ -7,8 +7,8 @@ describe('Test middleware', () => {
   it('Single onGet middleware', async () => {
     const tracer: string[] = [];
     const kevast = new Kevast(new AsyncStorage());
-    await kevast.set('key', 'value');
     kevast.onGet.use(onGet.bind(null, tracer, '0'));
+    await kevast.set('key', 'value');
     const value = await kevast.get('key');
     assert.deepEqual(tracer, ['Get:0']);
     assert(value as string === 'value0');
