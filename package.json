@@ -23,7 +23,8 @@
     "pretest:browser": "node ./test/browser/build.js",
     "test:nodejs": "mocha --require espower-typescript/guess \"test/**/*.ts\"",
     "test:browser": "open ./test/browser/test.html",
-    "prepublishOnly": "yarn test && yarn build"
+    "prepublishOnly": "yarn test && yarn build",
+    "coverage": "istanbul cover -e .ts _mocha -- --require ts-node/register \"test/**/*.ts\""
   },
   "files": [
     "dist/**/*"
@@ -47,8 +48,10 @@
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.5",
     "espower-typescript": "^9.0.1",
+    "istanbul": "1.1.0-alpha.1",
     "mocha": "^5.2.0",
     "power-assert": "^1.6.1",
+    "ts-node": "^7.0.1",
     "tslint": "^5.12.0",
     "typescript": "^3.2.2",
     "webpack": "^4.28.3",
