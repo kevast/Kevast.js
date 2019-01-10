@@ -3,7 +3,7 @@ import { Pair } from './Pair';
 import { MutationEvent, Storage } from './Storage';
 
 export class Kevast {
-  public onGet = {
+  public afterGet = {
     use: (middleware: SimplexMiddleware) => {
       this.use({
         onGet: middleware,
@@ -11,7 +11,7 @@ export class Kevast {
       });
     },
   };
-  public onSet = {
+  public beforeSet = {
     use: (middleware: SimplexMiddleware) => {
       this.use({
         onGet: () => {},
@@ -40,7 +40,7 @@ export class Kevast {
     const promises = [this.master, ...this.redundancies].map((storage) => storage.mutate(event));
     await Promise.all(promises);
   }
-  public async remove(key: string) {
+  public async remove(key: string): Promise<void> {
     if (typeof key !== 'string') { return; }
     const event: MutationEvent = {
       clear: false,

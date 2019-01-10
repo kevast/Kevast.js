@@ -7,7 +7,7 @@ describe('Test middleware', () => {
   it('Single onGet middleware', async () => {
     const tracer: string[] = [];
     const kevast = new Kevast(new AsyncStorage());
-    kevast.onGet.use(onGet.bind(null, tracer, '0'));
+    kevast.afterGet.use(onGet.bind(null, tracer, '0'));
     await kevast.set('key', 'value');
     const value = await kevast.get('key');
     assert.deepEqual(tracer, ['Get:0']);
@@ -17,9 +17,9 @@ describe('Test middleware', () => {
     const tracer: string[] = [];
     const kevast = new Kevast(new AsyncStorage());
     await kevast.set('key', 'value');
-    kevast.onGet.use(onGet.bind(null, tracer, '1'));
-    kevast.onGet.use(onGet.bind(null, tracer, '2'));
-    kevast.onGet.use(onGet.bind(null, tracer, '3'));
+    kevast.afterGet.use(onGet.bind(null, tracer, '1'));
+    kevast.afterGet.use(onGet.bind(null, tracer, '2'));
+    kevast.afterGet.use(onGet.bind(null, tracer, '3'));
     const value = await kevast.get('key');
     assert.deepEqual(tracer, ['Get:1', 'Get:2', 'Get:3']);
     assert(value as string === 'value123');
@@ -28,7 +28,7 @@ describe('Test middleware', () => {
     const tracer: string[] = [];
     const map = new Map<string, string>();
     const kevast = new Kevast(new AsyncStorage(map));
-    kevast.onSet.use(onSet.bind(null, tracer, '0'));
+    kevast.beforeSet.use(onSet.bind(null, tracer, '0'));
     await kevast.set('key', 'value');
     assert([...map.values()][0] === 'value0');
     const value = await kevast.get('key');
@@ -39,9 +39,9 @@ describe('Test middleware', () => {
     const tracer: string[] = [];
     const map = new Map<string, string>();
     const kevast = new Kevast(new AsyncStorage(map));
-    kevast.onSet.use(onSet.bind(null, tracer, '1'));
-    kevast.onSet.use(onSet.bind(null, tracer, '2'));
-    kevast.onSet.use(onSet.bind(null, tracer, '3'));
+    kevast.beforeSet.use(onSet.bind(null, tracer, '1'));
+    kevast.beforeSet.use(onSet.bind(null, tracer, '2'));
+    kevast.beforeSet.use(onSet.bind(null, tracer, '3'));
     await kevast.set('key', 'value');
     assert([...map.values()][0] === 'value123');
     const value = await kevast.get('key');
