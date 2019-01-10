@@ -1,4 +1,13 @@
 # kevast.js
+[![Build Status](https://img.shields.io/travis/kevast/kevast.js.svg?style=flat-square)](https://travis-ci.org/kevast/kevast.js)
+[![Coverage Status](https://img.shields.io/coveralls/github/kevast/kevast.js.svg?style=flat-square)](https://coveralls.io/github/kevast/kevast.js?branch=master)
+[![Dependencies](https://img.shields.io/david/kevast/kevast.js.svg?style=flat-square)](https://david-dm.org/kevast/kevast.js)
+[![Dev Dependencies](https://img.shields.io/david/dev/kevast/kevast.js.svg?style=flat-square)](https://david-dm.org/kevast/kevast.js?type=dev)
+[![Package Version](https://img.shields.io/npm/v/kevast.svg?style=flat-square)](https://www.npmjs.com/package/kevast)
+[![Open Issues](https://img.shields.io/github/issues-raw/kevast/kevast.js.svg?style=flat-square)](https://github.com/kevast/kevast.js/issues)
+![Node Version](https://img.shields.io/node/v/kevast.svg?style=flat-square)
+[![MIT License](https://img.shields.io/npm/l/kevast.svg?style=flat-square)](https://github.com/kevast/kevast.js/blob/master/LICENSE)
+
 ![logo](./docs/assets/logo.png)
 
 Kevast is a dependency-free **key-value storage interface**, allowing you to **access key-value based data wherever you want**, memory, file, gist, redis, google drive, etc.
@@ -122,7 +131,7 @@ kevast.use({
 - [Middleware](./docs/middleware.md)
 
 ## Compatibility
-Kevast requires ![Node.js v8.0.0](https://img.shields.io/badge/Node.js-v6.0.0-brightgreen.svg?style=flat-square) or higher.
+Kevast requires ![Node.js v8.0.0](https://img.shields.io/node/v/kevast.svg?style=flat-square)
 
 Browser support:
 
@@ -151,7 +160,7 @@ yarn coverage
 ```
 
 ## LICENSE
-MIT
+[![MIT License](https://img.shields.io/npm/l/kevast.svg?style=flat-square)](https://github.com/kevast/kevast.js/blob/master/LICENSE)
 
 ## Why the funky name?
 Kevast stands for ke(y) va(lue) st(orage).
