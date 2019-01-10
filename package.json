@@ -24,7 +24,8 @@
     "test:nodejs": "mocha --require espower-typescript/guess \"test/**/*.ts\"",
     "test:browser": "open ./test/browser/test.html",
     "prepublishOnly": "yarn test && yarn build",
-    "coverage": "istanbul cover -e .ts _mocha -- --require ts-node/register \"test/**/*.ts\""
+    "coverage": "istanbul cover -e .ts _mocha -- --require ts-node/register \"test/**/*.ts\"",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "files": [
     "dist/**/*"
@@ -47,6 +48,7 @@
     "@types/node": "^10.12.18",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.5",
+    "coveralls": "^3.0.2",
     "espower-typescript": "^9.0.1",
     "istanbul": "1.1.0-alpha.1",
     "mocha": "^5.2.0",
