@@ -1,63 +1,49 @@
 import assert = require('assert');
 import { Kevast } from '../src/index';
-import { AStorage } from './util/AStorage';
-import { SStorage } from './util/SStorage';
+import { AsyncStorage } from './util/AsyncStorage';
+import { SyncStorage } from './util/SyncStorage';
+let kevast: Kevast;
 
 describe('Test basic function with sync storage', () => {
-  before(async function() {
-    this.kevast = await Kevast.create(new SStorage());
+  before(() => {
+    kevast = new Kevast(new SyncStorage());
   });
   basicFunction();
 });
 
 describe('Test basic function with async storage', () => {
-  before(async function() {
-    this.kevast = await Kevast.create(new AStorage());
+  before(() => {
+    kevast = new Kevast(new AsyncStorage());
   });
   basicFunction();
 });
 
+describe('Test instantiation', () => {
+  it('Initial with data', async () => {
+    const map = new Map([['key', 'value']]);
+    kevast = new Kevast(new AsyncStorage(map));
+    assert(await kevast.get('key') === 'value');
+    kevast = new Kevast(new SyncStorage(map));
+    assert(await kevast.get('key') === 'value');
+  });
+});
+
 function basicFunction() {
-  it('Get', function() {
-    assert(this.kevast.get('key1') === null);
-    assert(this.kevast.get('key1', 'default') === 'default');
+  it('Get', async () => {
+    assert(await kevast.get('key') === undefined);
+    assert(await kevast.get('key', 'default') === 'default');
   });
-  it('Set', async function() {
-    await this.kevast.set('key1', 'value1');
-    assert(this.kevast.get('key1') === 'value1');
+  it('Set', async () => {
+    await kevast.set('key', 'value');
+    assert(await kevast.get('key') === 'value');
   });
-  it('Has', function() {
-    assert(this.kevast.has('key1') === true);
-    assert(this.kevast.has('key2') === false);
+  it('Remove', async () => {
+    await kevast.remove('key');
+    assert(await kevast.get('key') === undefined);
   });
-  it('Size', async function() {
-    await this.kevast.set('key2', 'value2');
-    await this.kevast.set('key3', 'value3');
-    await this.kevast.set('key4', 'value4');
-    assert(this.kevast.size() === 4);
-  });
-  it('Delete', async function() {
-    assert(this.kevast.has('key4') === true);
-    await this.kevast.delete('key4');
-    assert(this.kevast.has('key4') === false);
-  });
-  it('Entries', function() {
-    const source = [...this.kevast.entries()];
-    const target = [['key1', 'value1'], ['key2', 'value2'], ['key3', 'value3']];
-    assert.deepStrictEqual(source, target);
-  });
-  it('Keys', function() {
-    const source = [...this.kevast.keys()];
-    const target = ['key1', 'key2', 'key3'];
-    assert.deepStrictEqual(source, target);
-  });
-  it('Values', function() {
-    const source = [...this.kevast.values()];
-    const target = ['value1', 'value2', 'value3'];
-    assert.deepStrictEqual(source, target);
-  });
-  it('Clear', async function() {
-    await this.kevast.clear();
-    assert(this.kevast.size() === 0);
+  it('Clear', async () => {
+    await kevast.set('key', 'value');
+    await kevast.clear();
+    assert(await kevast.get('key') === undefined);
   });
 }
