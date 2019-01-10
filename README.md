@@ -122,7 +122,7 @@ kevast.use({
 - [Middleware](./docs/middleware.md)
 
 ## Compatibility
-Kevast requires ![Node.js v6.0.0](https://img.shields.io/badge/Node.js-v6.0.0-brightgreen.svg?style=flat-square) or higher.
+Kevast requires ![Node.js v8.0.0](https://img.shields.io/badge/Node.js-v6.0.0-brightgreen.svg?style=flat-square) or higher.
 
 Browser support:
 
