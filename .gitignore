@@ -1,11 +1,14 @@
 .DS_Store
+.npm
+.yarn-integrity
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.npm
-.yarn-integrity
+
 node_modules/
 dist/*
 !dist/.gitkeep
-.vscode/
 test/**/temp/
+
+.vscode/
+coverage/
