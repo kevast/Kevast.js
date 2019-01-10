@@ -1,8 +1,9 @@
 {
+  "plugins": ["@babel/plugin-transform-runtime"],
   "presets": [
     "@babel/typescript",
     ["@babel/env", {
-      "modules": false,
+      "modules": "umd",
       "targets": {
         "browsers": [ ">1%" ]
       }
