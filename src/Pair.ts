@@ -1,1 +1,4 @@
-export type Pair = [string, string];
+export interface Pair {
+  key: string;
+  value: string | undefined;
+}

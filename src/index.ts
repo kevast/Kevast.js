@@ -1,32 +1,19 @@
-import { GetMiddleware, IMiddleware, SetMiddleware } from './Middleware';
+import { DuplexMiddleware, SimplexMiddleware } from './Middleware';
 import { Pair } from './Pair';
-import { IMutationEvent, IStorage } from './Storage';
+import { MutationEvent, Storage } from './Storage';
 
 export class Kevast {
-  public static async create(...storages: IStorage[]): Promise<Kevast> {
-    let init: Map<string, string> = null;
-    if (storages.length > 0) {
-      init = await storages[0].current();
-    }
-    const instance = new Kevast();
-    instance.master = new Map<string, string>(init);
-    instance.storages = storages;
-    instance.middlewares = [];
-    instance.composedGet = instance.composeGetMiddlewares();
-    instance.composedSet = instance.composeSetMiddlewares();
-    return instance;
-  }
   public onGet = {
-    use: (middleware: GetMiddleware) => {
+    use: (middleware: SimplexMiddleware) => {
       if (!middleware) { return; }
       this.use({
         onGet: middleware,
-        onSet: () => Promise.resolve(),
+        onSet: () => {},
       });
     },
   };
   public onSet = {
-    use: (middleware: SetMiddleware) => {
+    use: (middleware: SimplexMiddleware) => {
       if (!middleware) { return; }
       this.use({
         onGet: () => {},
@@ -34,142 +21,66 @@ export class Kevast {
       });
     },
   };
-  private master: Map<string, string>;
-  private storages: IStorage[];
-  private middlewares: IMiddleware[];
-  private composedGet: (pair: Pair) => void;
-  private composedSet: (pair: Pair) => Promise<void>;
-  private constructor() {}
-  public use(middleware: IMiddleware): Kevast {
+  private master: Storage;
+  private redundancies: Storage[];
+  private middlewares: DuplexMiddleware[];
+  public constructor(master: Storage, redundancies?: Storage[]) {
+    this.master = master;
+    this.redundancies = redundancies || [];
+    this.middlewares = [];
+  }
+  public use(middleware: DuplexMiddleware): Kevast {
     if (!middleware) { return this; }
     this.middlewares.push(middleware);
-    this.composedGet = this.composeGetMiddlewares();
-    this.composedSet = this.composeSetMiddlewares();
     return this;
   }
-  public async clear() {
-    const removed: Pair[] = [...this.master.entries()];
-    this.master.clear();
-    if (this.storages.length === 0) { return; }
-    const event: IMutationEvent = {
-      added: [],
-      changed: [],
-      current: new Map(this.master),
-      removed,
+  public async clear(): Promise<void> {
+    const event: MutationEvent = {
+      clear: true,
+      removed: [],
+      set: [],
     };
-    await Promise.all(this.storages.map((storage) => storage.mutate(event)));
+    const promises = [this.master, ...this.redundancies].map((storage) => storage.mutate(event));
+    await Promise.all(promises);
   }
-  public has(key: string): boolean {
-    if (typeof key !== 'string') { return false; }
-    return this.master.has(key);
-  }
-  public async delete(key: string) {
+  public async remove(key: string) {
     if (typeof key !== 'string') { return; }
-    if (!this.master.has(key)) { return; }
-    const removed: Pair[] = [[key, this.master.get(key)]];
-    this.master.delete(key);
-    if (this.storages.length === 0) { return; }
-    const event: IMutationEvent = {
-      added: [],
-      changed: [],
-      current: new Map(this.master),
-      removed,
+    const event: MutationEvent = {
+      clear: false,
+      removed: [key],
+      set: [],
     };
-    await Promise.all(this.storages.map((storage) => storage.mutate(event)));
+    const promises = [this.master, ...this.redundancies].map((storage) => storage.mutate(event));
+    await Promise.all(promises);
   }
-  public entries(): Iterable<Pair> {
-    return this.master.entries();
-  }
-  public get(key: string, defaultValue: string = null): string {
+  public async get(key: string, defaultValue?: string): Promise<string | undefined> {
     if (typeof key !== 'string') {
       throw new TypeError('Key should be a string');
     }
-    if (typeof defaultValue !== 'string' && defaultValue !== null) {
+    if (typeof defaultValue !== 'string' && defaultValue !== undefined) {
       throw new TypeError('Default value should be a string');
     }
-    const pair: Pair = [key, null];
-    this.composedGet(pair);
-    const result = pair[1];
-    if (typeof result === 'string') {
-      return result;
+    const value = await this.master.get(key);
+    const pair: Pair = {key, value};
+    this.middlewares.map((m) => m.onGet).forEach((onGet) => onGet(pair));
+    if (typeof pair.value === 'string') {
+      return pair.value;
     } else {
       return defaultValue;
     }
   }
-  public keys(): Iterable<string> {
-    return this.master.keys();
-  }
-  public async set(key: string, value: string) {
+  public async set(key: string, value: string): Promise<void> {
     if (typeof key !== 'string' || typeof value !== 'string') {
       throw TypeError('Key or value must be string');
     }
-    const pair: Pair = [key, value];
-    await this.composedSet(pair);
-  }
-  public size(): number {
-    return this.master.size;
-  }
-  public values(): Iterable<string> {
-    return this.master.values();
-  }
-  private _get(pair: Pair) {
-    pair[1] = this.master.get(pair[0]);
-  }
-  private async _set(pair: Pair) {
-    this.master.set(pair[0], pair[1]);
-    if (this.storages.length === 0) { return; }
-    const event: IMutationEvent = {
-      added: [pair],
-      changed: [],
-      current: new Map(this.master),
+    const pair: Pair = {key, value};
+    this.middlewares.map((m) => m.onSet).forEach((onSet) => onSet(pair));
+    const event: MutationEvent = {
+      clear: false,
       removed: [],
+      set: [pair],
     };
-    await Promise.all(this.storages.map((storage) => storage.mutate(event)));
-  }
-  private composeGetMiddlewares(): (pair: Pair) => void {
-    const middlewares = [...this.middlewares].reverse();
-    return (pair: Pair) => {
-      let last = -1;
-      const dispatch = (index: number) => {
-        if (index <= last) {
-          throw new Error('next() called multiple times');
-        }
-        last = index;
-        if (index === middlewares.length) {
-          return this._get(pair);
-        }
-        const next: () => Promise<void> = dispatch.bind(null, index + 1);
-        const middleware = middlewares[index].onGet.bind(middlewares[index]);
-        middleware(pair, next);
-        // If next is not called, call it
-        if (index === last) {
-          next();
-        }
-      };
-      return dispatch(0);
-    };
-  }
-  private composeSetMiddlewares(): (pair: Pair) => Promise<void> {
-    const middlewares = this.middlewares;
-    return async (pair: Pair) => {
-      let last = -1;
-      const dispatch = async (index: number) => {
-        if (index <= last) {
-          return Promise.reject(new Error('next() called multiple times'));
-        }
-        last = index;
-        if (index === middlewares.length) {
-          return this._set(pair);
-        }
-        const next: () => Promise<void> = dispatch.bind(null, index + 1);
-        const middleware = middlewares[index].onSet.bind(middlewares[index]);
-        await middleware(pair, next);
-        // If next is not called, call it
-        if (index === last) {
-          await next();
-        }
-      };
-      return dispatch(0);
-    };
+    const promises = [this.master, ...this.redundancies].map((storage) => storage.mutate(event));
+    await Promise.all(promises);
   }
 }
