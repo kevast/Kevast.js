@@ -1,5 +1,5 @@
 const path = require('path');
-const name = require('./package.json').name;
+const packageName = require('./package.json').name;
 
 function generateConfig(name) {
   const mode = name.includes('min') ? 'production' : 'development';
@@ -14,17 +14,20 @@ function generateConfig(name) {
         },
       ],
     },
+    resolve: {
+      extensions: [ '.ts', '.js' ]
+    },
     output: {
       filename: `${name}.js`,
       path: path.resolve(__dirname, 'dist'),
-      library: camelCase(name),
+      library: camelCase(packageName),
       libraryTarget: 'umd'
     },
     devtool: 'source-map',
   }
 }
 
-module.exports = [generateConfig(name), generateConfig(`${name}.min`)];
+module.exports = [generateConfig(packageName), generateConfig(`${packageName}.min`)];
 
 function camelCase(str) {
   str = str.replace(/^([a-z])/, v => v.toUpperCase())
