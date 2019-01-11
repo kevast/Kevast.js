@@ -63,7 +63,7 @@ kevast.use(new KevastEncrypt(key));
 
   // According to configuration,
   // data will be saved in both memory, file and gist
-  // Of course, after encryption
+  // Of course, after encryption
 
   // Read data from memory
   // and decrypt
