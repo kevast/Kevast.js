@@ -59,7 +59,7 @@ export class Kevast {
     }
     const value = await this.master.get(key);
     const pair: Pair = {key, value};
-    this.middlewares.map((m) => m.afterGet).forEach((onGet) => onGet(pair));
+    this.middlewares.forEach((middleware) => middleware.afterGet(pair));
     if (typeof pair.value === 'string') {
       return pair.value;
     } else {
@@ -71,7 +71,7 @@ export class Kevast {
       throw TypeError('Key or value must be string');
     }
     const pair: Pair = {key, value};
-    this.middlewares.map((m) => m.beforeSet).forEach((onSet) => onSet(pair));
+    this.middlewares.forEach((middleware) => middleware.beforeSet(pair));
     const event: MutationEvent = {
       clear: false,
       removed: [],
