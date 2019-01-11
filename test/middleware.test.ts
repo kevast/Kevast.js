@@ -93,13 +93,13 @@ function onSet(tracer: string[], tag: string, pair: Pair) {
 
 function duplex(tracer: string[], tag: string) {
   return {
-    onGet: (pair: Pair) => {
+    afterGet: (pair: Pair) => {
       if (pair.value) {
         pair.value += tag;
       }
       tracer.push(`Get:${tag}`);
     },
-    onSet: (pair: Pair) => {
+    beforeSet: (pair: Pair) => {
       tracer.push(`Set:${tag}`);
       pair.value += tag;
     },
