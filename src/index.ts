@@ -6,16 +6,16 @@ export class Kevast {
   public afterGet = {
     use: (middleware: SimplexMiddleware) => {
       this.use({
-        onGet: middleware,
-        onSet: () => {},
+        afterGet: middleware,
+        beforeSet: () => {},
       });
     },
   };
   public beforeSet = {
     use: (middleware: SimplexMiddleware) => {
       this.use({
-        onGet: () => {},
-        onSet: middleware,
+        afterGet: () => {},
+        beforeSet: middleware,
       });
     },
   };
@@ -59,7 +59,7 @@ export class Kevast {
     }
     const value = await this.master.get(key);
     const pair: Pair = {key, value};
-    this.middlewares.map((m) => m.onGet).forEach((onGet) => onGet(pair));
+    this.middlewares.map((m) => m.afterGet).forEach((onGet) => onGet(pair));
     if (typeof pair.value === 'string') {
       return pair.value;
     } else {
@@ -71,7 +71,7 @@ export class Kevast {
       throw TypeError('Key or value must be string');
     }
     const pair: Pair = {key, value};
-    this.middlewares.map((m) => m.onSet).forEach((onSet) => onSet(pair));
+    this.middlewares.map((m) => m.beforeSet).forEach((onSet) => onSet(pair));
     const event: MutationEvent = {
       clear: false,
       removed: [],
