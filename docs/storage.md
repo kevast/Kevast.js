@@ -1,9 +1,7 @@
 # Storage
-This documentation is to help you get to know about kevast's `Storage` and provide a development guide.
-
 Storage is where kevast save data. You can use any imaginable storage media, [memory](https://github.com/kevast/kevast-memory.js), [file](https://github.com/kevast/kevast-file.js), [Web Storage](https://developer.mozilla.org/docs/Web/API/Web_Storage_API), [Github Gist](https://gist.github.com/), [Dropbox](https://www.dropbox.com/), etc.
 
-If kevast does not yet support the storage media you want, you can quickly create one according to the [guide](#how-to-create-a-storage). Thank you for your contribution to the kevast community.
+If kevast does not yet support the storage media you want, you can quickly create one according to the guide below. Thank you for your contribution to the kevast community.
 
 ## How to Create a Storage
 It is strongly recommended to use TypeScript in kevast project.
@@ -13,52 +11,54 @@ For practical detail, you can refer to [kevast-memory](https://github.com/kevast
 
 For short:
 ```typescript
-import { IMutationEvent, IStorage } from 'kevast/dist/Storage';
-class MyStorage implements IStorage {
-  public async current(): Promise<Map<string, string>> {
-    // return current contain like 
-    return new Map<string, string>([
-      ['key1', 'value1'],
-      ['key2', 'value2'],
-    ]);
-    // if empty
-    return new Map<string, string>();
+import { MutationEvent, Storage } from 'kevast/dist/Storage';
+
+export class MyStorage implements Storage {
+  public mutate(event: MutationEvent): Promise<void> | void {
+    // Pairs set
+    for (const pair of event.set) {
+      console.log(pair.key);
+      console.log(pair.value);
+    }
+    // Keys of pairs removed
+    for (const key of event.removed) {
+      console.log(key);
+    }
+    // true if storage is cleared
+    if (event.clear) {
+      console.log('Now storage should be cleared');
+    }
   }
-  public async mutate(event: IMutationEvent) {
-    // updates your storage according to mutation event
-    // pairs added to storage
-    event.added;
-    // pairs changed
-    event.changed;
-    // pairs removed from storage
-    event.removed;
-    // current contain map
-    event.current;
+  public get(key: string): Promise<string | undefined> | (string | undefined) {
+    // return the value associated to the key
+    return 'value';
   }
 }
 ```
+
 ### JavaScript
 ```javascript
 class MyStorage {
-  async current() {
-    // return current contain like 
-    return new Map([
-      ['key1', 'value1'],
-      ['key2', 'value2'],
-    ]);
-    // if empty
-    return new Map();
+  mutate(event) {
+    // Pairs set
+    for (const pair of event.set) {
+      console.log(pair.key);
+      console.log(pair.value);
+    }
+    // Keys of pairs removed
+    for (const key of event.removed) {
+      console.log(key);
+    }
+    // true if storage is cleared
+    if (event.clear) {
+      console.log('Now storage should be cleared');
+    }
   }
-  async mutate(event) {
-    // updates your storage according to mutation event
-    // pairs added to storage
-    event.added;
-    // pairs changed
-    event.changed;
-    // pairs removed from storage
-    event.removed;
-    // current contain map
-    event.current;
+  get(key) {
+    // return the value associated to the key
+    return 'value';
   }
 }
+
+module.exports = MyStorage;
 ```
