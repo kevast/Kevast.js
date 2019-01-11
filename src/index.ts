@@ -19,12 +19,13 @@ export class Kevast {
       });
     },
   };
-  private master: Storage;
-  private redundancies: Storage[];
+  private storages: Storage[];
   private middlewares: DuplexMiddleware[];
-  public constructor(master: Storage, redundancies?: Storage[]) {
-    this.master = master;
-    this.redundancies = redundancies || [];
+  public constructor(...storages: Storage[]) {
+    if (storages.length === 0) {
+      throw new Error('There should be at least one storage');
+    }
+    this.storages = storages;
     this.middlewares = [];
   }
   public use(middleware: DuplexMiddleware): Kevast {
@@ -37,7 +38,7 @@ export class Kevast {
       removed: [],
       set: [],
     };
-    const promises = [this.master, ...this.redundancies].map((storage) => storage.mutate(event));
+    const promises = this.storages.map((storage) => storage.mutate(event));
     await Promise.all(promises);
   }
   public async remove(key: string): Promise<void> {
@@ -47,7 +48,7 @@ export class Kevast {
       removed: [key],
       set: [],
     };
-    const promises = [this.master, ...this.redundancies].map((storage) => storage.mutate(event));
+    const promises = this.storages.map((storage) => storage.mutate(event));
     await Promise.all(promises);
   }
   public async get(key: string, defaultValue?: string): Promise<string | undefined> {
@@ -57,7 +58,13 @@ export class Kevast {
     if (typeof defaultValue !== 'string' && defaultValue !== undefined) {
       throw new TypeError('Default value should be a string');
     }
-    const value = await this.master.get(key);
+    let value: string | undefined;
+    for (const storage of this.storages) {
+      value = await storage.get(key);
+      if (typeof value === 'string') {
+        break;
+      }
+    }
     const pair: Pair = {key, value};
     this.middlewares.forEach((middleware) => middleware.afterGet(pair));
     if (typeof pair.value === 'string') {
@@ -77,7 +84,7 @@ export class Kevast {
       removed: [],
       set: [pair],
     };
-    const promises = [this.master, ...this.redundancies].map((storage) => storage.mutate(event));
+    const promises = this.storages.map((storage) => storage.mutate(event));
     await Promise.all(promises);
   }
 }
