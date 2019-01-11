@@ -33,7 +33,7 @@ Latest version
 ```
 Specific version
 ```html
-<script src="https://cdn.jsdelivr.net/npm/kevast@version/dist/browser/kevast.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kevast@<version>/dist/browser/kevast.min.js"></script>
 ```
 
 ## Hello Kevast
@@ -47,11 +47,8 @@ const { KevastEncrypt } = require('kevast-encrypt');
 const fileStore = new KevastFile('./storage.json');
 const gistStore = new KevastGist('YOUR GITHUB ACCESS TOKEN');
 
-// Kevast stores data in master storage
-// and back up data in all redundant storage
-const kevast = new Kevast(fileStore, [gistStore]);
-//                            ↑           ↑
-//                          master   redundancies
+// Kevast stores data in all storages
+const kevast = new Kevast(fileStore, gistStore);
 
 // Use encryption as a middleware
 const key = KevastEncrypt.randomKey();
@@ -62,7 +59,7 @@ kevast.use(new KevastEncrypt(key));
   await kevast.set('key', Math.random().toString());
 
   // According to configuration,
-  // data will be saved in both memory, file and gist
+  // data will be saved in both file and gist
   // Of course, after encryption
 
   // Read data from memory
@@ -75,29 +72,58 @@ kevast.use(new KevastEncrypt(key));
 ## Documentation
 ### Usage
 #### Create an instance
-Kevast requires one master storage and optionally multiple redundant storage. The data is saved on each storage, and the idempotent operation (like read) is only done on the primary storage.
+Kevast requires at least one storage to read and store data.
 ```javascript
 const { Kevast } = require('kevast');
+const { KevastMemory } = require('kevast-memory');
 const { KevastFile } = require('kevast-file');
 const { KevastGist } = require('kevast-gist');
 
+const memoryStore = new KevastMemory();
 const fileStore = new KevastFile('./storage.json');
 const gistStore = new KevastGist('YOUR GITHUB ACCESS TOKEN');
 
-//                          master   redundancies
-//                            ↓           ↓
-const kevast = new Kevast(fileStore, [gistStore]);
+// Error: There should be at least one storage
+new Kevast();
+
+const kevast = new Kevast(memoryStore, fileStore, gistStore);
 ```
 
 #### Basic function
-- `.constructor(master: Storage, redundancies?: Storage[])`: Instantiates kevast, see above for detail.
+- `.constructor(master: Storage, redundancies?: Storage[])`: Instantiates kevast.
 - `.set(key: string, value: string): Promise<void>`: Sets the value for the key.
 - `.get(key: string, defaultValue?: string): Promise<string | undefined>`: Returns the value associated to the key, or `defaultValue` or `undefined` if there is none.
 - `.remove(key: string): Promise<void>`: Removes a key-value pair
 - `.clear(): Promise<void>`: Removes all key-value pairs
-- `.use(middleware: DuplexMiddleware): Kevast`: Adds a middleware that works when both `Set` and `Get`, see below for detail.
-- `.afterGet.use(middleware: SimplexMiddleware)`: Adds a middleware that works after `Get`, see below for detail.
-- `.beforeSet.use(middleware: SimplexMiddleware)`: Adds a middleware that works before `Set`, see below for detail.
+- `.use(middleware: DuplexMiddleware): Kevast`: Adds a middleware that works when both `Set` and `Get`.
+- `.afterGet.use(middleware: SimplexMiddleware)`: Adds a middleware that works after `Get`.
+- `.beforeSet.use(middleware: SimplexMiddleware)`: Adds a middleware that works before `Set`.
+
+#### Fallback getting
+While performing `get`, kevast will find the value corresponding to the key from all the stores sequentially.
+
+```javascript
+const { Kevast } = require('kevast');
+const { KevastMemory } = require('kevast-memory');
+
+(async () => {
+  // Currently, both memoryStore1 and memoryStore2 are empty
+  const memoryStore1 = new KevastMemory();
+  const memoryStore2 = new KevastMemory();
+
+  // Now, memoryStore1 is still empty,
+  // but memoryStore2 is { 'key' => 'value' }
+  const kevast1 = new Kevast(memoryStore2);
+  await kevast1.set('key', 'value');
+
+  const kevast2 = new Kevast(memoryStore1, memoryStore2);
+  // Outputs 'value'
+  console.log(await kevast2.get('key'));
+
+  // kevast2 initially tried to get value from memoryStore1 but failed,
+  // then it got the value from memoryStore2.
+})();
+```
 
 #### Use a middleware
 Kevast has three kinds of middleware:
