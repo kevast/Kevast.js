@@ -18,12 +18,24 @@ describe('Test basic function with async storage', () => {
   basicFunction();
 });
 
-describe('Test instantiation', () => {
+describe('Test special condition while getting', () => {
+  it('Initial with nothing', () => {
+    assert.throws(() => {
+      const _ = new Kevast();
+    });
+  });
+
   it('Initial with data', async () => {
     const map = new Map([['key', 'value']]);
     kevast = new Kevast(new AsyncStorage(map));
     assert(await kevast.get('key') === 'value');
     kevast = new Kevast(new SyncStorage(map));
+    assert(await kevast.get('key') === 'value');
+  });
+
+  it('Fallback getting', async () => {
+    const map = new Map([['key', 'value']]);
+    kevast = new Kevast(new SyncStorage(), new AsyncStorage(map));
     assert(await kevast.get('key') === 'value');
   });
 });
