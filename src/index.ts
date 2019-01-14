@@ -22,14 +22,15 @@ export class Kevast {
   private storages: Storage[];
   private middlewares: DuplexMiddleware[];
   public constructor(...storages: Storage[]) {
-    if (storages.length === 0) {
-      throw new Error('There should be at least one storage');
-    }
     this.storages = storages;
     this.middlewares = [];
   }
   public use(middleware: DuplexMiddleware): Kevast {
     this.middlewares.push(middleware);
+    return this;
+  }
+  public add(storage: Storage): Kevast {
+    this.storages.push(storage);
     return this;
   }
   public async clear(): Promise<void> {
@@ -52,6 +53,9 @@ export class Kevast {
     await Promise.all(promises);
   }
   public async get(key: string, defaultValue?: string): Promise<string | undefined> {
+    if (this.storages.length === 0) {
+      throw new Error('There should be at least one storage');
+    }
     if (typeof key !== 'string') {
       throw new TypeError('Key should be a string');
     }
@@ -74,6 +78,9 @@ export class Kevast {
     }
   }
   public async set(key: string, value: string): Promise<void> {
+    if (this.storages.length === 0) {
+      throw new Error('There should be at least one storage');
+    }
     if (typeof key !== 'string' || typeof value !== 'string') {
       throw TypeError('Key or value must be string');
     }

@@ -19,12 +19,6 @@ describe('Test basic function with async storage', () => {
 });
 
 describe('Test special condition while getting', () => {
-  it('Initial with nothing', () => {
-    assert.throws(() => {
-      const _ = new Kevast();
-    });
-  });
-
   it('Initial with data', async () => {
     const map = new Map([['key', 'value']]);
     kevast = new Kevast(new AsyncStorage(map));
@@ -42,30 +36,22 @@ describe('Test special condition while getting', () => {
 
 function basicFunction() {
   it('Get', async () => {
-    try {
+    await assertThrowsAsync(async () => {
       await kevast.get(1 as any as string);
-    } catch (err) {
-      assert(err.message === 'Key should be a string');
-    }
-    try {
+    }, 'Key should be a string');
+    await assertThrowsAsync(async () => {
       await kevast.get('key', 1 as any as string);
-    } catch (err) {
-      assert(err.message === 'Default value should be a string');
-    }
+    }, 'Default value should be a string');
     assert(await kevast.get('key') === undefined);
     assert(await kevast.get('key', 'default') === 'default');
   });
   it('Set', async () => {
-    try {
+    await assertThrowsAsync(async () => {
       await kevast.set(1 as any as string, 'value');
-    } catch (err) {
-      assert(err.message === 'Key or value must be string');
-    }
-    try {
+    }, 'Key or value must be string');
+    await assertThrowsAsync(async () => {
       await kevast.set('key', 1 as any as string);
-    } catch (err) {
-      assert(err.message === 'Key or value must be string');
-    }
+    }, 'Key or value must be string');
     await kevast.set('key', 'value');
     assert(await kevast.get('key') === 'value');
   });
@@ -80,4 +66,16 @@ function basicFunction() {
     await kevast.clear();
     assert(await kevast.get('key') === undefined);
   });
+}
+
+/* tslint:disable: ban-types */
+async function assertThrowsAsync(fn: Function, expected: string) {
+  let actual: string | undefined;
+  try {
+    await fn();
+  } catch (e) {
+    actual = e.message;
+  } finally {
+    assert(actual === expected);
+  }
 }
