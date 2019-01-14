@@ -5,6 +5,8 @@ import { AsyncStorage } from './util/AsyncStorage';
 describe('Test storage', () => {
   it('Initial with nothing', async () => {
     const kevast = new Kevast();
+    await kevast.clear();
+    await kevast.remove('key');
     await assertThrowsAsync(async () => {
       await kevast.set('key', 'value');
     }, 'There should be at least one storage');
@@ -15,8 +17,16 @@ describe('Test storage', () => {
   it('Initial with nothing but adding storage', async () => {
     const kevast = new Kevast();
     kevast.add(new AsyncStorage());
-    await kevast.set('key', 'value');
-    assert(await kevast.get('key') === 'value');
+    await kevast.set('key1', 'value1');
+    await kevast.set('key2', 'value2');
+    assert(await kevast.get('key1') === 'value1');
+    assert(await kevast.get('key2') === 'value2');
+    await kevast.remove('key2');
+    assert(await kevast.get('key1') === 'value1');
+    assert(await kevast.get('key2') === undefined);
+    await kevast.clear();
+    assert(await kevast.get('key1') === undefined);
+    assert(await kevast.get('key2') === undefined);
   });
 });
 
