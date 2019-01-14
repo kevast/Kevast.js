@@ -1,6 +1,6 @@
 {
   "name": "kevast",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Kevast for browser and Node.js. One key-value interface, all kinds of storages.",
   "main": "dist/index.js",
   "keywords": [
