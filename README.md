@@ -51,8 +51,8 @@ const gistStore = new KevastGist('YOUR GITHUB ACCESS TOKEN');
 const kevast = new Kevast(fileStore, gistStore);
 
 // Use encryption as a middleware
-const key = KevastEncrypt.randomKey();
-kevast.use(new KevastEncrypt(key));
+const password = KevastEncrypt.randomString();
+kevast.use(new KevastEncrypt(password));
 
 (async () => {
   // Save key-value data
