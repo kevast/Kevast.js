@@ -1,9 +1,11 @@
 # kevast.js
 [![Build Status](https://img.shields.io/travis/kevast/kevast.js.svg?style=flat-square)](https://travis-ci.org/kevast/kevast.js)
 [![Coverage Status](https://img.shields.io/coveralls/github/kevast/kevast.js.svg?style=flat-square)](https://coveralls.io/github/kevast/kevast.js?branch=master)
+[![Maintainability](https://img.shields.io/codeclimate/maintainability/kevast/kevast.js.svg?style=flat-square)](https://codeclimate.com/github/kevast/kevast.js)
 [![Dependencies](https://img.shields.io/david/kevast/kevast.js.svg?style=flat-square)](https://david-dm.org/kevast/kevast.js)
 [![Dev Dependencies](https://img.shields.io/david/dev/kevast/kevast.js.svg?style=flat-square)](https://david-dm.org/kevast/kevast.js?type=dev)
 [![Package Version](https://img.shields.io/npm/v/kevast.svg?style=flat-square)](https://www.npmjs.com/package/kevast)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat-square)](https://github.com/kevast/kevast.js/issues)
 [![Open Issues](https://img.shields.io/github/issues-raw/kevast/kevast.js.svg?style=flat-square)](https://github.com/kevast/kevast.js/issues)
 ![Node Version](https://img.shields.io/node/v/kevast.svg?style=flat-square)
 [![MIT License](https://img.shields.io/npm/l/kevast.svg?style=flat-square)](https://github.com/kevast/kevast.js/blob/master/LICENSE)
