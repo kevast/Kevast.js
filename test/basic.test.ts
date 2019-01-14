@@ -1,5 +1,6 @@
 import assert = require('assert');
 import { Kevast } from '../src/index';
+import { Pair } from '../src/Pair';
 import { AsyncStorage } from './util/AsyncStorage';
 import { SyncStorage } from './util/SyncStorage';
 let kevast: Kevast;
@@ -38,10 +39,10 @@ function basicFunction() {
   it('Get', async () => {
     await assertThrowsAsync(async () => {
       await kevast.get(1 as any as string);
-    }, 'Key should be a string');
+    }, 'Key must be a string');
     await assertThrowsAsync(async () => {
       await kevast.get('key', 1 as any as string);
-    }, 'Default value should be a string');
+    }, 'Default value must be a string');
     assert(await kevast.get('key') === undefined);
     assert(await kevast.get('key', 'default') === 'default');
   });
@@ -54,12 +55,54 @@ function basicFunction() {
     }, 'Key or value must be string');
     await kevast.set('key', 'value');
     assert(await kevast.get('key') === 'value');
+    await kevast.remove('key');
+  });
+  it('Bulk Set', async () => {
+    await assertThrowsAsync(async () => {
+      await kevast.bulkSet(1 as any as Pair[]);
+    }, 'Pairs must be a array of pair');
+    await kevast.bulkSet([
+      {
+        key: 'key1',
+        value: 'value1',
+      },
+      {
+        key: 'key2',
+        value: 'value2',
+      },
+    ]);
+    assert(await kevast.get('key1') === 'value1');
+    assert(await kevast.get('key2') === 'value2');
+    await kevast.remove('key1');
+    await kevast.remove('key2');
   });
   it('Remove', async () => {
-    // nothing should happen
-    await kevast.remove(1 as any as string);
+    await kevast.set('key', 'value');
+    await assertThrowsAsync(async () => {
+      await kevast.remove(1 as any as string);
+    }, 'Key must be a string');
     await kevast.remove('key');
     assert(await kevast.get('key') === undefined);
+  });
+  it('Bulk Remove', async () => {
+    await assertThrowsAsync(async () => {
+      await kevast.bulkRemove(1 as any as string[]);
+    }, 'Keys must be an array of string');
+    await kevast.bulkSet([
+      {
+        key: 'key1',
+        value: 'value1',
+      },
+      {
+        key: 'key2',
+        value: 'value2',
+      },
+    ]);
+    assert(await kevast.get('key1') === 'value1');
+    assert(await kevast.get('key2') === 'value2');
+    await kevast.bulkRemove(['key1', 'key2']);
+    assert(await kevast.get('key1') === undefined);
+    assert(await kevast.get('key2') === undefined);
   });
   it('Clear', async () => {
     await kevast.set('key', 'value');

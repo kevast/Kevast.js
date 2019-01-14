@@ -9,10 +9,10 @@ describe('Test storage', () => {
     await kevast.remove('key');
     await assertThrowsAsync(async () => {
       await kevast.set('key', 'value');
-    }, 'There should be at least one storage');
+    }, 'There must be at least one storage');
     await assertThrowsAsync(async () => {
       await kevast.get('key');
-    }, 'There should be at least one storage');
+    }, 'There must be at least one storage');
   });
   it('Initial with nothing but adding storage', async () => {
     const kevast = new Kevast();
