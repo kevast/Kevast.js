@@ -19,32 +19,12 @@ describe('Test basic function with async storage', () => {
   basicFunction();
 });
 
-describe('Test special condition while getting', () => {
-  it('Initial with data', async () => {
-    const map = new Map([['key', 'value']]);
-    kevast = new Kevast(new AsyncStorage(map));
-    assert(await kevast.get('key') === 'value');
-    kevast = new Kevast(new SyncStorage(map));
-    assert(await kevast.get('key') === 'value');
-  });
-
-  it('Fallback getting', async () => {
-    const map = new Map([['key', 'value']]);
-    kevast = new Kevast(new SyncStorage(), new AsyncStorage(map));
-    assert(await kevast.get('key') === 'value');
-  });
-});
-
 function basicFunction() {
   it('Get', async () => {
     await assertThrowsAsync(async () => {
       await kevast.get(1 as any as string);
     }, 'Key must be a string');
-    await assertThrowsAsync(async () => {
-      await kevast.get('key', 1 as any as string);
-    }, 'Default value must be a string');
     assert(await kevast.get('key') === undefined);
-    assert(await kevast.get('key', 'default') === 'default');
   });
   it('Set', async () => {
     await assertThrowsAsync(async () => {

@@ -2,6 +2,10 @@ import { DuplexMiddleware, SimplexMiddleware } from './Middleware';
 import { Pair } from './Pair';
 import { MutationEvent, Storage } from './Storage';
 
+interface Options {
+  backwardUpdate?: boolean;
+}
+
 export class Kevast {
   public afterGet = {
     use: (middleware: SimplexMiddleware) => {
@@ -21,9 +25,13 @@ export class Kevast {
   };
   private storages: Storage[];
   private middlewares: DuplexMiddleware[];
+  private options: Options;
   public constructor(...storages: Storage[]) {
     this.storages = storages;
     this.middlewares = [];
+    this.options = {
+      backwardUpdate: false,
+    };
   }
   public use(middleware: DuplexMiddleware): Kevast {
     this.middlewares.push(middleware);
@@ -32,6 +40,9 @@ export class Kevast {
   public add(storage: Storage): Kevast {
     this.storages.push(storage);
     return this;
+  }
+  public config(options: Options) {
+    Object.assign(this.options, options);
   }
   public async clear(): Promise<void> {
     const event: MutationEvent = {
@@ -62,30 +73,34 @@ export class Kevast {
     const promises = this.storages.map((storage) => storage.mutate(event));
     await Promise.all(promises);
   }
-  public async get(key: string, defaultValue?: string): Promise<string | undefined> {
+  public async get(key: string): Promise<string | undefined> {
     if (this.storages.length === 0) {
       throw new Error('There must be at least one storage');
     }
     if (typeof key !== 'string') {
       throw new TypeError('Key must be a string');
     }
-    if (typeof defaultValue !== 'string' && defaultValue !== undefined) {
-      throw new TypeError('Default value must be a string');
-    }
     let value: string | undefined;
+    const missStorages: Storage[] = [];
     for (const storage of this.storages) {
       value = await storage.get(key);
-      if (typeof value === 'string') {
+      if (typeof value !== 'string') {
+        missStorages.push(storage);
+      } else {
         break;
       }
     }
+    if (this.options.backwardUpdate && typeof value === 'string') {
+      const event: MutationEvent = {
+        clear: false,
+        removed: [],
+        set: [{key, value}],
+      };
+      await Promise.all(missStorages.map((storage) => storage.mutate(event)));
+    }
     const pair: Pair = {key, value};
     this.middlewares.forEach((middleware) => middleware.afterGet(pair));
-    if (typeof pair.value === 'string') {
-      return pair.value;
-    } else {
-      return defaultValue;
-    }
+    return pair.value;
   }
   public async set(key: string, value: string): Promise<void> {
     await this.bulkSet([{key, value}]);
