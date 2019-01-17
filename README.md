@@ -85,24 +85,46 @@ const memoryStore = new KevastMemory();
 const fileStore = new KevastFile('./storage.json');
 const gistStore = new KevastGist('YOUR GITHUB ACCESS TOKEN');
 
-// Error: There should be at least one storage
-new Kevast();
-
 const kevast = new Kevast(memoryStore, fileStore, gistStore);
+```
+
+```javascript
+const { Kevast } = require('kevast');
+const { KevastMemory } = require('kevast-memory');
+const { KevastFile } = require('kevast-file');
+const { KevastGist } = require('kevast-gist');
+
+const kevast = new Kevast();
+
+const memoryStore = new KevastMemory();
+const fileStore = new KevastFile('./storage.json');
+const gistStore = new KevastGist('YOUR GITHUB ACCESS TOKEN');
+
+kevast.add(memoryStore)
+      .add(fileStore)
+      .add(gistStore);
 ```
 
 #### Basic function
 - `.constructor(master: Storage, redundancies?: Storage[])`: Instantiates kevast.
 - `.set(key: string, value: string): Promise<void>`: Sets the value for the key.
-- `.get(key: string, defaultValue?: string): Promise<string | undefined>`: Returns the value associated to the key, or `defaultValue` or `undefined` if there is none.
+- `.get(key: string): Promise<string | undefined>`: Returns the value associated to the key, `undefined` if there is none.
 - `.remove(key: string): Promise<void>`: Removes a key-value pair
 - `.clear(): Promise<void>`: Removes all key-value pairs
 - `.use(middleware: DuplexMiddleware): Kevast`: Adds a middleware that works when both `Set` and `Get`.
 - `.afterGet.use(middleware: SimplexMiddleware)`: Adds a middleware that works after `Get`.
 - `.beforeSet.use(middleware: SimplexMiddleware)`: Adds a middleware that works before `Set`.
+- `.config(options: Options)`: Update configuration.
+
+#### Configuration
+Edit by `.config(options: Options))`
+
+- `backwardUpdate: boolean`: Enable backward updating or not. Default `false`.
 
 #### Fallback getting
 While performing `get`, kevast will find the value corresponding to the key from all the stores sequentially.
+
+In other words, the latter Storage will become the fallback of the previous Storage.
 
 ```javascript
 const { Kevast } = require('kevast');
@@ -124,6 +146,47 @@ const { KevastMemory } = require('kevast-memory');
 
   // kevast2 initially tried to get value from memoryStore1 but failed,
   // then it got the value from memoryStore2.
+})();
+```
+
+#### Backward updating
+In the above example of Fallback Getting, if the specified value is not found in the previous storage, kevast will try to take the value from the following storage. Once the value is found in a certain storage, it will be returned immediately.
+
+If Backward Updating is enabled, kevast will update the key-value pairs to all previous storages after finding the value.
+
+```javascript
+const { Kevast } = require('kevast');
+const { KevastMemory } = require('kevast-memory');
+
+(async () => {
+  // Now, both memoryStore1 and memoryStore2 are empty
+  const memoryStore1 = new KevastMemory();
+  const memoryStore2 = new KevastMemory();
+
+  const kevast1 = new Kevast(memoryStore2);
+  // Now, memoryStore1 is still empty,
+  // but memoryStore2 is { 'key' => 'value' }
+  await kevast1.set('key', 'value');
+
+  const kevast2 = new Kevast(memoryStore1, memoryStore2);
+  // Enable backward updating
+  kevast2.config({
+    backwardUpdate: true,
+  });
+
+  // Outputs 'value'
+  console.log(await kevast2.get('key'));
+
+  // kevast2 initially tried to get value from memoryStore1 but failed,
+  // then it got the value from memoryStore2.
+
+  // IMPORTANT!
+  // Because backward updating is enabled,
+  // Now, { 'key' => 'value' } is also stored in memoryStore1
+
+  const kevast3 = new Kevast(memoryStore1);
+  // Outputs 'value'
+  console.log(await kevast3.get('key'));
 })();
 ```
 
