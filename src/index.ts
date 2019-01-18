@@ -117,7 +117,7 @@ export class Kevast {
         throw TypeError('Key or value must be string');
       }
     }
-    pairs.map((pair) => {
+    pairs = [...pairs].map((pair) => {
       this.middlewares.forEach((middleware) => middleware.beforeSet(pair));
       return pair;
     });
