@@ -117,9 +117,10 @@ export class Kevast {
         throw TypeError('Key or value must be string');
       }
     }
-    pairs = [...pairs].map((pair) => {
-      this.middlewares.forEach((middleware) => middleware.beforeSet(pair));
-      return pair;
+    pairs = pairs.map((pair) => {
+      const newPair: Pair = {key: pair.key, value: pair.value};
+      this.middlewares.forEach((middleware) => middleware.beforeSet(newPair));
+      return newPair;
     });
     const event: MutationEvent = {
       clear: false,
