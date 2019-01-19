@@ -107,10 +107,13 @@ kevast.add(memoryStore)
 
 #### Basic function
 - `.constructor(master: Storage, redundancies?: Storage[])`: Instantiates kevast.
-- `.set(key: string, value: string): Promise<void>`: Sets the value for the key.
+- `.set(key: string, value: string | undefined): Promise<void>`: Sets the value for the key.
+- `.bulkSet(pairs: Pair[]): Promise<void>`: Sets several pairs.
 - `.get(key: string): Promise<string | undefined>`: Returns the value associated to the key, `undefined` if there is none.
-- `.remove(key: string): Promise<void>`: Removes a key-value pair
-- `.clear(): Promise<void>`: Removes all key-value pairs
+- `.remove(key: string): Promise<void>`: Removes a key-value pair.
+- `.bulkRemove(keys: string[]): Promise<void>`: Removes several pairs.
+- `.clear(): Promise<void>`: Removes all key-value pairs.
+- `.add(storage: Storage): Kevast`: Adds a storage.
 - `.use(middleware: DuplexMiddleware): Kevast`: Adds a middleware that works when both `Set` and `Get`.
 - `.afterGet.use(middleware: SimplexMiddleware)`: Adds a middleware that works after `Get`.
 - `.beforeSet.use(middleware: SimplexMiddleware)`: Adds a middleware that works before `Set`.

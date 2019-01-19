@@ -29,10 +29,10 @@ function basicFunction() {
   it('Set', async () => {
     await assertThrowsAsync(async () => {
       await kevast.set(1 as any as string, 'value');
-    }, 'Key or value must be string');
+    }, 'Key must be string');
     await assertThrowsAsync(async () => {
       await kevast.set('key', 1 as any as string);
-    }, 'Key or value must be string');
+    }, 'Value must be string');
     await kevast.set('key', 'value');
     assert(await kevast.get('key') === 'value');
     await kevast.remove('key');
@@ -52,6 +52,14 @@ function basicFunction() {
       },
     ]);
     assert(await kevast.get('key1') === 'value1');
+    assert(await kevast.get('key2') === 'value2');
+    await kevast.bulkSet([
+      {
+        key: 'key1',
+        value: undefined,
+      },
+    ]);
+    assert(await kevast.get('key1') === undefined);
     assert(await kevast.get('key2') === 'value2');
     await kevast.remove('key1');
     await kevast.remove('key2');

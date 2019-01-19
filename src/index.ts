@@ -102,7 +102,7 @@ export class Kevast {
     this.middlewares.forEach((middleware) => middleware.afterGet(pair));
     return pair.value;
   }
-  public async set(key: string, value: string): Promise<void> {
+  public async set(key: string, value: string | undefined): Promise<void> {
     await this.bulkSet([{key, value}]);
   }
   public async bulkSet(pairs: Pair[]): Promise<void> {
@@ -113,19 +113,23 @@ export class Kevast {
       throw new TypeError('Pairs must be a array of pair');
     }
     for (const pair of pairs) {
-      if (typeof pair.key !== 'string' || typeof pair.value !== 'string') {
-        throw TypeError('Key or value must be string');
+      if (typeof pair.key !== 'string') {
+        throw TypeError('Key must be string');
+      }
+      if (typeof pair.value !== 'string' && pair.value !== undefined) {
+        throw TypeError('Value must be string');
       }
     }
-    pairs = pairs.map((pair) => {
+    const set = pairs.filter((pair) => !!pair.value).map((pair) => {
       const newPair: Pair = {key: pair.key, value: pair.value};
       this.middlewares.forEach((middleware) => middleware.beforeSet(newPair));
       return newPair;
     });
+    const removed = pairs.filter((pair) => !pair.value).map((pair) => pair.key);
     const event: MutationEvent = {
       clear: false,
-      removed: [],
-      set: pairs,
+      removed,
+      set,
     };
     const promises = this.storages.map((storage) => storage.mutate(event));
     await Promise.all(promises);
