@@ -74,12 +74,8 @@ export class Kevast {
     await Promise.all(promises);
   }
   public async get(key: string): Promise<string | undefined> {
-    if (this.storages.length === 0) {
-      throw new Error('There must be at least one storage');
-    }
-    if (typeof key !== 'string') {
-      throw new TypeError('Key must be a string');
-    }
+    if (this.storages.length === 0) { throw new Error('There must be at least one storage'); }
+    if (typeof key !== 'string') { throw new TypeError('Key must be a string'); }
     let value: string | undefined;
     const missStorages: Storage[] = [];
     for (const storage of this.storages) {
@@ -106,19 +102,11 @@ export class Kevast {
     await this.bulkSet([{key, value}]);
   }
   public async bulkSet(pairs: Pair[]): Promise<void> {
-    if (this.storages.length === 0) {
-      throw new Error('There must be at least one storage');
-    }
-    if (!(pairs instanceof Array)) {
-      throw new TypeError('Pairs must be a array of pair');
-    }
+    if (this.storages.length === 0) { throw new Error('There must be at least one storage'); }
+    if (!(pairs instanceof Array)) { throw new TypeError('Pairs must be a array of pair'); }
     for (const pair of pairs) {
-      if (typeof pair.key !== 'string') {
-        throw TypeError('Key must be string');
-      }
-      if (typeof pair.value !== 'string' && pair.value !== undefined) {
-        throw TypeError('Value must be string');
-      }
+      if (typeof pair.key !== 'string') { throw TypeError('Key must be string'); }
+      if (typeof pair.value !== 'string' && pair.value !== undefined) { throw TypeError('Value must be string'); }
     }
     const set = pairs.filter((pair) => !!pair.value).map((pair) => {
       const newPair: Pair = {key: pair.key, value: pair.value};
